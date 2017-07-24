@@ -10,7 +10,6 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -104,8 +103,9 @@ public class Dessin_item18 extends View {
 
         if (mImageX == 0f || mImageY == 0f) {
             mImageX = (getWidth() - image.getWidth()) / 2;
-            mImageY = (getHeight() - image.getHeight()) / 2;
+            mImageY = (3*(getHeight() - image.getHeight()) / 4);
         }
+
 
         canvas.drawBitmap(image, mImageX, mImageY, mPaintImage);
 
@@ -281,17 +281,12 @@ public class Dessin_item18 extends View {
     }
 
     private Bitmap getResizeBitmap(Bitmap bitmap){
+        // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
         float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
-        int mImageWidth = resize;
+        int mImageWidth = 1317;
         int mImageHeight = Math.round(mImageWidth*aspect_ratio);
         bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
         return bitmap.copy(Bitmap.Config.ARGB_8888,false);
-
-        //DisplayMetrics metrics = this.getResources().getDisplayMetrics();
-        //float totalDIP_X = metrics.xdpi;
-        //float totalDIP_Y = metrics.ydpi;
-        //image = Bitmap.createScaledBitmap (image, (int)(6.9*totalDIP_X), (int)(7.7*totalDIP_Y), false);
-        //image = image.copy(Bitmap.Config.ARGB_8888, true);
     }
 
 }
