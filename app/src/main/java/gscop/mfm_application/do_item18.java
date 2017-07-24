@@ -11,12 +11,14 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.io.File;
@@ -29,6 +31,7 @@ import static android.content.ContentValues.TAG;
 public class do_item18 extends Activity {
 
     private Button boutonTerminer;
+    private final Context context = this;
     private Button move_CD;
     private String name = "";
     private String surname = "";
@@ -90,16 +93,27 @@ public class do_item18 extends Activity {
             }
         });
 
-        move_CD = (ToggleButton) findViewById(R.id.button_move);
+        move_CD = (Button) findViewById(R.id.button_move);
         move_CD.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 if(click_first == false){
                     dessin.getBooleanClick(true);
+                    state.setText(R.string.move);
+                    // Pour changer l'image background du bouton
+                    move_CD.setBackgroundResource(R.drawable.dismovecd_bord);
+                    boutonTerminer.setBackgroundResource(R.drawable.check_block);
                     click_first = true;
+                    // Pour afficher une avis
+                    Toast toast = Toast.makeText(context,R.string.toast_movecd,Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
+                    toast.show();
                 }
                 else{
                     dessin.getBooleanClick(false);
+                    state.setText(R.string.enCours);
+                    move_CD.setBackgroundResource(R.drawable.movecd_bord);
+                    boutonTerminer.setBackgroundResource(R.drawable.check);
                     click_first = false;
                 }
             }

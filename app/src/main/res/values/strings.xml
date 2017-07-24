@@ -27,6 +27,8 @@
     <string name="confirmBackAccueil">"Voulez-vous vraiment changer de patient ? \n </string>
     <string name="enCours"> Exercice en cours… </string>
     <string name="saving"> ENREGISTREMENT EN COURS… </string>
+    <string name="move"> Déplacement du CD… </string>
+    <string name="toast_movecd"> Le CD peut être déplacé </string>
     <string name="pdfsaving"> PDF en cours d\'enregistrement…</string>
     <string name="cotationTablet">"Cotation sur tablette : "</string>
     <string name="cotationPaper">"Cotation sur papier : "</string>
