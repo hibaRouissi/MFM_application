@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -41,7 +42,7 @@ public class do_item18 extends Activity {
     private TextView state;
     private ArrayList tableauX;
     private ArrayList tableauY;
-    private boolean click_first;
+    private boolean click_first = false;
     private int varRandom;
 
     @Override
@@ -71,25 +72,32 @@ public class do_item18 extends Activity {
         boutonTerminer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boutonTerminer.setClickable(false);
-                // Action quand on appuie sur terminer -> affiche la cartographie
-                state.setText(R.string.saving);
-                dessin.getPaint().setColor(Color.BLUE);
-                dessin.draw(dessin.getCanvas());
-                Intent myIntent = new Intent(do_item18.this, carto_item18.class);
-                myIntent.putExtra("name", name);
-                myIntent.putExtra("surname", surname);
-                myIntent.putExtra("birthdate", birthdate);
-                myIntent.putExtra("varRandom",varRandom);
-                cartoBitmap = dessin.getCartographie();
-                tableauX = dessin.getTableauX();
-                tableauY = dessin.getTableauY();
-                myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
-                myIntent.putExtra("tableauX",tableauX);
-                myIntent.putExtra("tableauY",tableauY);
-                startActivity(myIntent);
-                // On ferme l'activité en cours
-                finish();
+                if(click_first == true){
+                    Toast toast = Toast.makeText(context,R.string.toast_block,Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
+                    toast.show();
+                }
+                else {
+                    boutonTerminer.setClickable(false);
+                    // Action quand on appuie sur terminer -> affiche la cartographie
+                    state.setText(R.string.saving);
+                    dessin.getPaint().setColor(Color.BLUE);
+                    dessin.draw(dessin.getCanvas());
+                    Intent myIntent = new Intent(do_item18.this, carto_item18.class);
+                    myIntent.putExtra("name", name);
+                    myIntent.putExtra("surname", surname);
+                    myIntent.putExtra("birthdate", birthdate);
+                    myIntent.putExtra("varRandom", varRandom);
+                    cartoBitmap = dessin.getCartographie();
+                    tableauX = dessin.getTableauX();
+                    tableauY = dessin.getTableauY();
+                    myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
+                    myIntent.putExtra("tableauX", tableauX);
+                    myIntent.putExtra("tableauY", tableauY);
+                    startActivity(myIntent);
+                    // On ferme l'activité en cours
+                    finish();
+                }
             }
         });
 
@@ -103,11 +111,11 @@ public class do_item18 extends Activity {
                     // Pour changer l'image background du bouton
                     move_CD.setBackgroundResource(R.drawable.dismovecd_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check_block);
-                    click_first = true;
                     // Pour afficher une avis
                     Toast toast = Toast.makeText(context,R.string.toast_movecd,Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
                     toast.show();
+                    click_first = true;
                 }
                 else{
                     dessin.getBooleanClick(false);
