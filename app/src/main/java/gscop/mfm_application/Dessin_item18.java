@@ -21,7 +21,7 @@ import java.util.HashMap;
 public class Dessin_item18 extends View {
 
 
-    private static final String TAG = "" ;
+    private static final String TAG = "gscop.mfm_application";
     private Bitmap image;
     private Bitmap custom_image;
     private Canvas canvas_cv = new Canvas();
@@ -92,7 +92,7 @@ public class Dessin_item18 extends View {
         image = BitmapFactory.decodeResource(getResources(), R.drawable.item18_test);
         image = getResizeBitmap(image);
 
-        Log.d(TAG,"INIT");
+        Log.d(TAG," INIT ");
     }
 
     @Override
