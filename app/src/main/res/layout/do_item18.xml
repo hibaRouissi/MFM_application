@@ -24,6 +24,13 @@
             android:textColor="#767879"
             android:textSize="30sp" />
 
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_move"
+            android:textOff="Move CD OFF"
+            android:textOn="Move CD ON" />
+
         <Button
             android:id="@+id/buttonStop"
             android:layout_width="90dp"

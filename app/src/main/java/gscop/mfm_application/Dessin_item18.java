@@ -8,8 +8,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -18,12 +20,16 @@ import java.util.HashMap;
 
 public class Dessin_item18 extends View {
 
-    private Canvas canvas;
-    private Bitmap cartographie;
-    private final Paint paint = new Paint();
 
-    private HashMap<Integer, Float> mX = new HashMap<>();
-    private HashMap<Integer, Float> mY = new HashMap<>();
+    private static final String TAG = "" ;
+    private Bitmap image;
+    private Bitmap custom_image;
+    private Canvas canvas_cv = new Canvas();
+    private float mImageX, mImageY;
+    private final Paint paint = new Paint();
+    private final Paint mPaintImage = new Paint();
+    private int resize = 1000;
+
     private HashMap<Integer, Path> paths = new HashMap<>();
     private ArrayList<Path> completedPaths = new ArrayList<>();
 
@@ -37,13 +43,17 @@ public class Dessin_item18 extends View {
     private ArrayList<Float> xDownList = new ArrayList<>();
     private ArrayList<Float> yDownList = new ArrayList<>();
 
+    private boolean on = false;
+
     /**
      * Créé une nouvelle instance de Dessin_item18.
      *
      * @param context
      */
     public Dessin_item18(Context context) {
+
         super(context);
+        init(null);
     }
 
     /**
@@ -53,7 +63,9 @@ public class Dessin_item18 extends View {
      * @param attrs
      */
     public Dessin_item18(Context context, AttributeSet attrs) {
+
         super(context, attrs);
+        init(attrs);
     }
 
     /**
@@ -65,40 +77,38 @@ public class Dessin_item18 extends View {
      */
     public Dessin_item18(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init(attrs);
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
+    private void init(@Nullable AttributeSet set) {
 
-        // Initialise les caractéristiques du trait (forme, couleur...)
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setAntiAlias(true);
         paint.setColor(Color.TRANSPARENT);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(20);
+
+        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18_test);
+        image = getResizeBitmap(image);
+
+        Log.d(TAG,"INIT");
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
 
-        // On transforme le drawable du CD en bitmap
-        Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.item18);
+        custom_image = Bitmap.createBitmap(getWidth(),getHeight(),Bitmap.Config.ARGB_8888);
+        canvas.drawBitmap(custom_image,0,0,null);
+        canvas = new Canvas(custom_image);
 
-        // On fait en sorte que l'image du CD soit toujours de la même taille quelle que soit la tablette utilisée : l'image est redimensionnée pour être à la bonne taille en fonction de la densité de l'écran
-        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
-        float totalDIP_X = metrics.xdpi;
-        float totalDIP_Y = metrics.ydpi;
-        image = Bitmap.createScaledBitmap (image, (int)(6.9*totalDIP_X), (int)(7.7*totalDIP_Y), false);
+        if (mImageX == 0f || mImageY == 0f) {
+            mImageX = (getWidth() - image.getWidth()) / 2;
+            mImageY = (getHeight() - image.getHeight()) / 2;
+        }
 
-        image = image.copy(Bitmap.Config.ARGB_8888, true);
+        canvas.drawBitmap(image, mImageX, mImageY, mPaintImage);
 
-        // On ajoute ce bitmap au canvas pour pouvoir dessiner dessus : les deux nombres en paramètres servent à positionner le CD dans le canvas
-        canvas.drawBitmap(image, 0, 0, null);
-        canvas = new Canvas(image);
-
-        // On dessine le trait que l'utilisateur est en train de faire (les points de départ et le mouvement)
         for (Path fingerPath : paths.values()) {
             if (fingerPath != null) {
                 canvas.drawPoint(xDown, yDown, paint);
@@ -106,18 +116,16 @@ public class Dessin_item18 extends View {
             }
         }
 
-        // Permet de garder le dessin des points de départ à l'écran (sinon il arrive qu'il n'y ait aucun dessin lorsqu'on touche rapidement l'écran avec un doigt sans le bouger)
         for (int i = 0; i < xDownList.size(); i++) {
             canvas.drawPoint(xDownList.get(i), yDownList.get(i), paint);
         }
 
-        // On affiche les traits terminés (sinon seul le trait en train d'être dessiné est affiché)
         for (Path completedPath : completedPaths) {
             canvas.drawPath(completedPath, paint);
         }
 
-        this.cartographie = image;
-        this.canvas = canvas;
+        canvas_cv = canvas;
+        Log.d(TAG," ON DRAW ");
     }
 
     @Override
@@ -131,56 +139,76 @@ public class Dessin_item18 extends View {
             // Actions à réaliser quand l'utilisateur touche l'écran
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
-                Path p = new Path();
-                // On récupère l'identifiant du contact tactile et ses coordonnées
-                try {
-                    p.moveTo(event.getX(id), event.getY(id));
-                    paths.put(id, p);
+                if(on == true){
+                    break;
+                }
+                else {
+                    Path p = new Path();
+                    // On récupère l'identifiant du contact tactile et ses coordonnées
+                    try {
+                        p.moveTo(event.getX(id), event.getY(id));
+                        paths.put(id, p);
 
-                    // Contiennent les coordonnées rangées par identifiant
-                    mX.put(id, event.getX(id));
-                    mY.put(id, event.getY(id));
+                        // Contiennent les coordonnées du premier point touché
+                        xDown = event.getX(id);
+                        yDown = event.getY(id);
 
-                    // Contiennent les coordonnées du premier point touché
-                    xDown = event.getX(id);
-                    yDown = event.getY(id);
+                        // Contiennent toutes les coordonnées brutes
+                        tableauX.add(event.getX(id));
+                        tableauY.add(event.getY(id));
 
-                    // Contiennent toutes les coordonnées brutes
-                    tableauX.add(event.getX(id));
-                    tableauY.add(event.getY(id));
+                        Log.d(TAG, " ACTION DOWN  ID : " + id);
+                        Log.d(TAG, " SIZE : " + event.getSize(id) + " TYPE : " + event.getToolType(id));
+                        Log.d(TAG, " MAJOR : " + event.getToolMajor(id) + " MINOR : " + event.getToolMinor(id));
+                        Log.d(TAG, " POINTS : " + event.getPointerCount());
 
-                    invalidate();
+                        invalidate();
 
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
+                    } catch (IllegalArgumentException ex) {
+                        ex.printStackTrace();
+                    }
                 }
                 break;
             }
 
             // Actions à réaliser quand l'utilisateur bouge son doigt
             case MotionEvent.ACTION_MOVE: {
-                // Pour chaque identifiant de contact, on récupère ses coordonnés et on créé une ligne entre chacun des points
-                for (int size = event.getPointerCount(), i = 0; i < size; i++) {
-                    Path p = paths.get(event.getPointerId(i));
-                    if (p != null) {
-                        // Permet d'avoir un tracé plus fluide (on prend plus de points en compte)
-                        for (int j = 0; j < historySize; j++) {
-                            float historicalX = event.getHistoricalX(i, j);
-                            float historicalY = event.getHistoricalY(i, j);
-                            expandDirtyRect(historicalX, historicalY);
-                            p.lineTo(historicalX, historicalY);
-                            tableauX.add(historicalX);
-                            tableauY.add(historicalY);
+                if (on == true) {
+                    float mx = event.getX(id);
+                    float my = event.getY(id);
+                    if (mx >= mImageX && mx <= (mImageX + image.getWidth())) {
+                        if (my >= mImageY && my <= (mImageY + image.getHeight())) {
+                            mImageX = mx - (image.getWidth() / 2);
+                            mImageY = my - (image.getHeight() / 2);
+                            Log.d(TAG," ACTION MOVE CD");
+                            invalidate();
+                            return false;
                         }
-                        mX.put(event.getPointerId(i), event.getX(i));
-                        mY.put(event.getPointerId(i), event.getY(i));
-                        tableauX.add(event.getX(i));
-                        tableauY.add(event.getY(i));
-                        invalidate();
                     }
                 }
-                invalidate();
-                break;
+                else {
+                        // Pour chaque identifiant de contact, on récupère ses coordonnés et on créé une ligne entre chacun des points
+                        for (int size = event.getPointerCount(), i = 0; i < size; i++) {
+                            Path p = paths.get(event.getPointerId(i));
+                            if (p != null) {
+                                // Permet d'avoir un tracé plus fluide (on prend plus de points en compte)
+                                for (int j = 0; j < historySize; j++) {
+                                    float historicalX = event.getHistoricalX(i, j);
+                                    float historicalY = event.getHistoricalY(i, j);
+                                    expandDirtyRect(historicalX, historicalY);
+                                    p.lineTo(historicalX, historicalY);
+                                    tableauX.add(historicalX);
+                                    tableauY.add(historicalY);
+                                }
+                                tableauX.add(event.getX(i));
+                                tableauY.add(event.getY(i));
+                                invalidate();
+                            }
+                        }
+                        Log.d(TAG," ACTION MOVE ");
+                        invalidate();
+                        break;
+                    }
             }
 
             // Actions à réaliser quand l'utilisateur arrête le contact tactile
@@ -194,13 +222,17 @@ public class Dessin_item18 extends View {
                     yDownList.add(yDown);
                     invalidate();
                     paths.remove(id);
-                    mX.remove(id);
-                    mY.remove(id);
                 }
+                Log.d(TAG," ACTION UP ");
                 invalidate();
-
                 break;
             }
+
+            case MotionEvent.ACTION_CANCEL:{
+                Log.d(TAG," PROBLEM WITH PALM TOUCH ");
+                break;
+            }
+
         }
 
         return true;
@@ -208,9 +240,11 @@ public class Dessin_item18 extends View {
 
 
 
-    public Bitmap getCartographie() {
-        return cartographie;
-    }
+    public Bitmap getCartographie() {return custom_image;}
+
+    public Canvas getCanvas() {return canvas_cv;}
+
+    public Paint getPaint() {return paint;}
 
     public ArrayList getTableauX() {
         return tableauX;
@@ -220,9 +254,9 @@ public class Dessin_item18 extends View {
         return tableauY;
     }
 
-    public Paint getPaint() { return paint; }
-
-    public Canvas getCanvas() { return canvas; }
+    public void getBooleanClick(boolean click) {
+        on = click;
+    }
 
 
 
@@ -246,8 +280,18 @@ public class Dessin_item18 extends View {
         }
     }
 
+    private Bitmap getResizeBitmap(Bitmap bitmap){
+        float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
+        int mImageWidth = resize;
+        int mImageHeight = Math.round(mImageWidth*aspect_ratio);
+        bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
+        return bitmap.copy(Bitmap.Config.ARGB_8888,false);
 
-
-
+        //DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        //float totalDIP_X = metrics.xdpi;
+        //float totalDIP_Y = metrics.ydpi;
+        //image = Bitmap.createScaledBitmap (image, (int)(6.9*totalDIP_X), (int)(7.7*totalDIP_Y), false);
+        //image = image.copy(Bitmap.Config.ARGB_8888, true);
+    }
 
 }

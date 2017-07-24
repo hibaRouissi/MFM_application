@@ -10,21 +10,26 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static android.content.ContentValues.TAG;
+
 public class do_item18 extends Activity {
 
     private Button boutonTerminer;
+    private Button move_CD;
     private String name = "";
     private String surname = "";
     private String birthdate = "";
@@ -33,6 +38,7 @@ public class do_item18 extends Activity {
     private TextView state;
     private ArrayList tableauX;
     private ArrayList tableauY;
+    private boolean click_first;
     private int varRandom;
 
     @Override
@@ -41,6 +47,7 @@ public class do_item18 extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.do_item18);
+
         // Permet de cacher la barre de notifications
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -80,6 +87,21 @@ public class do_item18 extends Activity {
                 startActivity(myIntent);
                 // On ferme l'activité en cours
                 finish();
+            }
+        });
+
+        move_CD = (ToggleButton) findViewById(R.id.button_move);
+        move_CD.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(click_first == false){
+                    dessin.getBooleanClick(true);
+                    click_first = true;
+                }
+                else{
+                    dessin.getBooleanClick(false);
+                    click_first = false;
+                }
             }
         });
     }
