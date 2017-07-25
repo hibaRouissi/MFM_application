@@ -9,11 +9,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -44,6 +46,7 @@ public class do_item18 extends Activity {
     private ArrayList tableauY;
     private boolean click_first = false;
     private int varRandom;
+    private ArrayList<Long> time_path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,10 +115,10 @@ public class do_item18 extends Activity {
                     move_CD.setBackgroundResource(R.drawable.dismovecd_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check_block);
                     // Pour afficher une avis
+                    click_first = true;
                     Toast toast = Toast.makeText(context,R.string.toast_movecd,Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
                     toast.show();
-                    click_first = true;
                 }
                 else{
                     dessin.getBooleanClick(false);

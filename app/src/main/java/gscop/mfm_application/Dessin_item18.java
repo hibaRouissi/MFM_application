@@ -27,7 +27,7 @@ public class Dessin_item18 extends View {
     private float mImageX, mImageY;
     private final Paint paint = new Paint();
     private final Paint mPaintImage = new Paint();
-    private int resize = 1000;
+    private int resize = 1317;
 
     private HashMap<Integer, Path> paths = new HashMap<>();
     private ArrayList<Path> completedPaths = new ArrayList<>();
@@ -41,6 +41,7 @@ public class Dessin_item18 extends View {
     private float yDown;
     private ArrayList<Float> xDownList = new ArrayList<>();
     private ArrayList<Float> yDownList = new ArrayList<>();
+    private ArrayList<Long> time_path = new ArrayList<>();
 
     private boolean on = false;
 
@@ -153,6 +154,7 @@ public class Dessin_item18 extends View {
                         xDown = event.getX(id);
                         yDown = event.getY(id);
 
+
                         // Contiennent toutes les coordonnées brutes
                         tableauX.add(event.getX(id));
                         tableauY.add(event.getY(id));
@@ -234,7 +236,6 @@ public class Dessin_item18 extends View {
             }
 
         }
-
         return true;
     }
 
@@ -283,10 +284,9 @@ public class Dessin_item18 extends View {
     private Bitmap getResizeBitmap(Bitmap bitmap){
         // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
         float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
-        int mImageWidth = 1317;
+        int mImageWidth = resize;
         int mImageHeight = Math.round(mImageWidth*aspect_ratio);
         bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
         return bitmap.copy(Bitmap.Config.ARGB_8888,false);
     }
-
 }

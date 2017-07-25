@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -38,6 +39,7 @@ public class carto_item18 extends Activity {
     private ArrayList tableauY;
     private int varRandom;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +48,7 @@ public class carto_item18 extends Activity {
 
         carto = (ImageView) findViewById(R.id.cartographieItem18);
 
+
         // On récupère les infos de l'intent de l'activité précédente
         Intent intent = getIntent();
         if (intent != null) {
@@ -53,6 +56,8 @@ public class carto_item18 extends Activity {
             surname = intent.getStringExtra("surname");
             birthdate = intent.getStringExtra("birthdate");
             path = intent.getStringExtra("path");
+            tableauX = intent.getIntegerArrayListExtra("tableauX");
+            tableauY = intent.getIntegerArrayListExtra("tableauY");
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
             try {
                 File f = new File(path, "cartographie.png");
@@ -61,8 +66,6 @@ public class carto_item18 extends Activity {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            tableauX = intent.getIntegerArrayListExtra("tableauX");
-            tableauY = intent.getIntegerArrayListExtra("tableauY");
         }
 
         infosPatient = (TextView) findViewById(R.id.infosPatient);
@@ -210,5 +213,6 @@ public class carto_item18 extends Activity {
         }
         return back_answer;
     }
+
 }
 
