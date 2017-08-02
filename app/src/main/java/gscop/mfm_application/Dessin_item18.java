@@ -8,12 +8,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -27,13 +29,15 @@ public class Dessin_item18 extends View {
     private float mImageX, mImageY;
     private final Paint paint = new Paint();
     private final Paint mPaintImage = new Paint();
-    private int resize = 1317;
 
     private HashMap<Integer, Path> paths = new HashMap<>();
+    private HashMap<Integer, ArrayList<Float>> tabsX = new HashMap<>();
+    private HashMap<Integer, ArrayList<Float>> tabsY = new HashMap<>();
     private ArrayList<Path> completedPaths = new ArrayList<>();
-
-    private ArrayList<Float> tableauX = new ArrayList<>();
-    private ArrayList<Float> tableauY = new ArrayList<>();
+    private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
+    private ArrayList<ArrayList<Float>> completedTabsY = new ArrayList<>();
+    private ArrayList<Long> eventDownTimes = new ArrayList<>();
+    private ArrayList<Long> eventUpTimes = new ArrayList<>();
 
     private final RectF dirtyRect = new RectF();
 
@@ -41,7 +45,6 @@ public class Dessin_item18 extends View {
     private float yDown;
     private ArrayList<Float> xDownList = new ArrayList<>();
     private ArrayList<Float> yDownList = new ArrayList<>();
-    private ArrayList<Long> time_path = new ArrayList<>();
 
     private boolean on = false;
 
@@ -85,7 +88,7 @@ public class Dessin_item18 extends View {
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setAntiAlias(true);
-        paint.setColor(Color.TRANSPARENT);
+        paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(20);
 
@@ -145,6 +148,9 @@ public class Dessin_item18 extends View {
                 }
                 else {
                     Path p = new Path();
+                    ArrayList<Float> tableauX = new ArrayList<>();
+                    ArrayList<Float> tableauY = new ArrayList<>();
+
                     // On récupère l'identifiant du contact tactile et ses coordonnées
                     try {
                         p.moveTo(event.getX(id), event.getY(id));
@@ -154,23 +160,32 @@ public class Dessin_item18 extends View {
                         xDown = event.getX(id);
                         yDown = event.getY(id);
 
+                        // Contiennent les temps d'ACTION DOWN
+                        eventDownTimes.add(System.currentTimeMillis());
+                        Log.d(TAG, " TIME DOWN : " + System.currentTimeMillis());
 
                         // Contiennent toutes les coordonnées brutes
                         tableauX.add(event.getX(id));
                         tableauY.add(event.getY(id));
+                        tabsX.put(id,tableauX);
+                        tabsY.put(id,tableauY);
 
                         Log.d(TAG, " ACTION DOWN  ID : " + id);
                         Log.d(TAG, " SIZE : " + event.getSize(id) + " TYPE : " + event.getToolType(id));
                         Log.d(TAG, " MAJOR : " + event.getToolMajor(id) + " MINOR : " + event.getToolMinor(id));
                         Log.d(TAG, " POINTS : " + event.getPointerCount());
 
+                        if(event.getSize(id) >= 0.035){
+                            Log.d(TAG," PALM TOUCH ");
+
+                        }
                         invalidate();
 
                     } catch (IllegalArgumentException ex) {
                         ex.printStackTrace();
                     }
+                    break;
                 }
-                break;
             }
 
             // Actions à réaliser quand l'utilisateur bouge son doigt
@@ -190,8 +205,12 @@ public class Dessin_item18 extends View {
                 }
                 else {
                         // Pour chaque identifiant de contact, on récupère ses coordonnés et on créé une ligne entre chacun des points
+                        long time = event.getEventTime();
                         for (int size = event.getPointerCount(), i = 0; i < size; i++) {
                             Path p = paths.get(event.getPointerId(i));
+                            ArrayList<Float> tableauX = tabsX.get(event.getPointerId(i));
+                            ArrayList<Float> tableauY = tabsY.get(event.getPointerId(i));
+
                             if (p != null) {
                                 // Permet d'avoir un tracé plus fluide (on prend plus de points en compte)
                                 for (int j = 0; j < historySize; j++) {
@@ -218,14 +237,21 @@ public class Dessin_item18 extends View {
             case MotionEvent.ACTION_POINTER_UP: {
                 // On ajoute le trait tracé dans la liste des traits terminés, et on le retire de mX et mY
                 Path p = paths.get(id);
+                ArrayList<Float> tableauX = tabsX.get(id);
+                ArrayList<Float> tableauY = tabsY.get(id);
+
                 if (p != null) {
                     completedPaths.add(p);
+                    completedTabsX.add(tableauX);
+                    completedTabsY.add(tableauY);
+                    eventUpTimes.add(System.currentTimeMillis());
                     xDownList.add(xDown);
                     yDownList.add(yDown);
                     invalidate();
                     paths.remove(id);
                 }
                 Log.d(TAG," ACTION UP ");
+                Log.d(TAG, " TIME UP : " + System.currentTimeMillis());
                 invalidate();
                 break;
             }
@@ -248,17 +274,16 @@ public class Dessin_item18 extends View {
     public Paint getPaint() {return paint;}
 
     public ArrayList getTableauX() {
-        return tableauX;
+        return completedTabsX;
     }
 
-    public ArrayList getTableauY() {
-        return tableauY;
-    }
+    public ArrayList getTableauY() {return completedTabsY;}
 
-    public void getBooleanClick(boolean click) {
-        on = click;
-    }
+    public void getBooleanClick(boolean click) {on = click;}
 
+    public ArrayList getEventUpTimes(){return eventUpTimes;}
+
+    public ArrayList getEventDownTimes(){return eventDownTimes;}
 
 
     /**
@@ -284,9 +309,10 @@ public class Dessin_item18 extends View {
     private Bitmap getResizeBitmap(Bitmap bitmap){
         // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
         float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
-        int mImageWidth = resize;
+        int mImageWidth = 1317;
         int mImageHeight = Math.round(mImageWidth*aspect_ratio);
         bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
         return bitmap.copy(Bitmap.Config.ARGB_8888,false);
     }
+
 }

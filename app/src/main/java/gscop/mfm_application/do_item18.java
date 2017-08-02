@@ -46,7 +46,8 @@ public class do_item18 extends Activity {
     private ArrayList tableauY;
     private boolean click_first = false;
     private int varRandom;
-    private ArrayList<Long> time_path;
+    private ArrayList eventUpTimes;
+    private ArrayList eventDownTimes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public class do_item18 extends Activity {
             public void onClick(View v) {
                 if(click_first == true){
                     Toast toast = Toast.makeText(context,R.string.toast_block,Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP, 0, 0);
                     toast.show();
                 }
                 else {
@@ -94,9 +95,13 @@ public class do_item18 extends Activity {
                     cartoBitmap = dessin.getCartographie();
                     tableauX = dessin.getTableauX();
                     tableauY = dessin.getTableauY();
+                    eventDownTimes = dessin.getEventDownTimes();
+                    eventUpTimes = dessin.getEventUpTimes();
                     myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
                     myIntent.putExtra("tableauX", tableauX);
                     myIntent.putExtra("tableauY", tableauY);
+                    myIntent.putExtra("eventUpTimes", eventUpTimes);
+                    myIntent.putExtra("eventDownTimes", eventDownTimes);
                     startActivity(myIntent);
                     // On ferme l'activité en cours
                     finish();
@@ -117,7 +122,7 @@ public class do_item18 extends Activity {
                     // Pour afficher une avis
                     click_first = true;
                     Toast toast = Toast.makeText(context,R.string.toast_movecd,Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP, 0, 0);
                     toast.show();
                 }
                 else{

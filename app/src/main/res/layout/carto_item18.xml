@@ -48,15 +48,18 @@
             android:textSize="30sp"
             android:textStyle="bold" />
 
-
-        <ImageView
+        <!--<ImageView
             android:id="@+id/cartographieItem18"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="3dp"
             android:background="#FFFFFFFF"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription" /> -->
 
+        <gscop.mfm_application.Dessin_carto18
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dessin_carto18" />
 
     </LinearLayout>
 

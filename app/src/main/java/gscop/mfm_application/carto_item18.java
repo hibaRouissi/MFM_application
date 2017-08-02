@@ -38,6 +38,10 @@ public class carto_item18 extends Activity {
     private ArrayList tableauX;
     private ArrayList tableauY;
     private int varRandom;
+    private Dessin_carto18 dessin_carto18;
+    private ArrayList eventUpTimes;
+    private ArrayList eventDownTimes;
+
 
 
     @Override
@@ -46,8 +50,8 @@ public class carto_item18 extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.carto_item18);
 
-        carto = (ImageView) findViewById(R.id.cartographieItem18);
-
+        //carto = (ImageView) findViewById(R.id.cartographieItem18);
+        dessin_carto18 = (Dessin_carto18) findViewById(R.id.dessin_carto18);
 
         // On récupère les infos de l'intent de l'activité précédente
         Intent intent = getIntent();
@@ -58,11 +62,17 @@ public class carto_item18 extends Activity {
             path = intent.getStringExtra("path");
             tableauX = intent.getIntegerArrayListExtra("tableauX");
             tableauY = intent.getIntegerArrayListExtra("tableauY");
+            eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
+            eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
+            dessin_carto18.getTabX(tableauX);
+            dessin_carto18.getTabY(tableauY);
+            dessin_carto18.getEventUpTimes(eventUpTimes);
+            dessin_carto18.getEventDownTimes(eventDownTimes);
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
             try {
                 File f = new File(path, "cartographie.png");
                 cartoBitmap = BitmapFactory.decodeStream(new FileInputStream(f));
-                carto.setImageBitmap(cartoBitmap);
+                //carto.setImageBitmap(cartoBitmap);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
