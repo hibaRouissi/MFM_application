@@ -1,6 +1,8 @@
 package gscop.mfm_application;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -25,9 +27,12 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
 
     private Paint paint ;
 
-    private static final String TAG = "gscop.mfm_application";
+    private Boolean animStop;
+    private int stop = 0;
+    private Bitmap image;
+    private Float mImageX,mImageY;
 
-    private Boolean  animStop = false;
+    private static final String TAG = "gscop.mfm_application";
 
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsY = new ArrayList<>();
@@ -70,6 +75,9 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(20);
 
+        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18_test);
+        image = getResizeBitmap(image);
+        animStop = true;
         this.setOnClickListener(this);
     }
 
@@ -87,8 +95,9 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     }
 
     public void startAnimation(){
-        setPaths();
         animRunning.put(0,true);
+        stop = 0;
+        animStop = false;
         invalidate();
     }
 
@@ -114,9 +123,17 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     @Override
     protected void onDraw(Canvas canvas) {
 
+        canvas.drawBitmap(image,mImageX,mImageY,null);
+
         if(animStop){
-            for(int j = 0; j < paths.size(); j++){
-                canvas.drawPath(paths.get(j),paint);
+            if(paths.size() == 0) {
+                setPaths();
+                invalidate();
+            }
+            else{
+                for(int j = 0; j < paths.size(); j++){
+                    canvas.drawPath(paths.get(j),paint);
+                }
             }
         } else {
             for (int j = 0; j < paths.size(); j++) {
@@ -128,6 +145,8 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             super.onDraw(canvas);
             invalidate();
         }
+
+        super.onDraw(canvas);
     }
 
     public void isTime(int j){
@@ -185,9 +204,12 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
                 Log.d(TAG, " DONE! ");
                 Log.d(TAG, " ERROR TIME : " + ((System.currentTimeMillis() - animTimesInit.get(j)) - durationTimes.get(j)));
                 animRunning.put(j, false);
-                if(j == (paths.size()-1)){
-                    Log.d(TAG, " ANIM STOP ");
+                stop++;
+                Log.d(TAG, " STOP NUMBER : " + stop);
+                if(stop == paths.size()){
+                    Log.d(TAG, " STOP ANIM ");
                     animStop = true;
+                    animTimesInit.clear();
                 }
             }
 
@@ -204,6 +226,15 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
         }
     }
 
+    private Bitmap getResizeBitmap(Bitmap bitmap){
+        // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
+        float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
+        int mImageWidth = 1317;
+        int mImageHeight = Math.round(mImageWidth*aspect_ratio);
+        bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
+        return bitmap.copy(Bitmap.Config.ARGB_8888,false);
+    }
+
     public void getTabX(ArrayList<ArrayList<Float>> tabsX) {
         completedTabsX = tabsX;
     }
@@ -216,6 +247,11 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
 
     public void getEventDownTimes(ArrayList<Long> event_times) {
         eventDownTimes = event_times;
+    }
+
+    public void getCdPosition(Float x, Float y){
+        mImageX = x;
+        mImageY = y;
     }
 
 }

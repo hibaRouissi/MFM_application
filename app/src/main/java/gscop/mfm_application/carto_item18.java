@@ -41,8 +41,7 @@ public class carto_item18 extends Activity {
     private Dessin_carto18 dessin_carto18;
     private ArrayList eventUpTimes;
     private ArrayList eventDownTimes;
-
-
+    private Float mImageX,mImageY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,10 +63,13 @@ public class carto_item18 extends Activity {
             tableauY = intent.getIntegerArrayListExtra("tableauY");
             eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
             eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
+            mImageX = intent.getFloatExtra("mImageX",0f);
+            mImageY = intent.getFloatExtra("mImageY",0f);
             dessin_carto18.getTabX(tableauX);
             dessin_carto18.getTabY(tableauY);
             dessin_carto18.getEventUpTimes(eventUpTimes);
             dessin_carto18.getEventDownTimes(eventDownTimes);
+            dessin_carto18.getCdPosition(mImageX,mImageY);
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
             try {
                 File f = new File(path, "cartographie.png");

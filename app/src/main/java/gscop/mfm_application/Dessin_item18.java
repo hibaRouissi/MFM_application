@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ public class Dessin_item18 extends View {
     private HashMap<Integer, Path> paths = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsX = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsY = new HashMap<>();
+    private HashMap<Integer,Long> eventTimes = new HashMap<>();
     private ArrayList<Path> completedPaths = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsY = new ArrayList<>();
@@ -110,7 +113,6 @@ public class Dessin_item18 extends View {
             mImageY = (3*(getHeight() - image.getHeight()) / 4);
         }
 
-
         canvas.drawBitmap(image, mImageX, mImageY, mPaintImage);
 
         for (Path fingerPath : paths.values()) {
@@ -143,7 +145,7 @@ public class Dessin_item18 extends View {
             // Actions à réaliser quand l'utilisateur touche l'écran
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
-                if(on == true){
+                if(on){
                     break;
                 }
                 else {
@@ -160,9 +162,8 @@ public class Dessin_item18 extends View {
                         xDown = event.getX(id);
                         yDown = event.getY(id);
 
-                        // Contiennent les temps d'ACTION DOWN
-                        eventDownTimes.add(System.currentTimeMillis());
-                        Log.d(TAG, " TIME DOWN : " + System.currentTimeMillis());
+                        // Contiennent les temps de initialisation du movement
+                        eventTimes.put(id,System.currentTimeMillis());
 
                         // Contiennent toutes les coordonnées brutes
                         tableauX.add(event.getX(id));
@@ -190,7 +191,7 @@ public class Dessin_item18 extends View {
 
             // Actions à réaliser quand l'utilisateur bouge son doigt
             case MotionEvent.ACTION_MOVE: {
-                if (on == true) {
+                if (on) {
                     float mx = event.getX(id);
                     float my = event.getY(id);
                     if (mx >= mImageX && mx <= (mImageX + image.getWidth())) {
@@ -244,14 +245,16 @@ public class Dessin_item18 extends View {
                     completedPaths.add(p);
                     completedTabsX.add(tableauX);
                     completedTabsY.add(tableauY);
+                    eventDownTimes.add(eventTimes.get(id));
                     eventUpTimes.add(System.currentTimeMillis());
+                    Log.d(TAG," DURATION TIME : " + (System.currentTimeMillis() - eventTimes.get(id)));
                     xDownList.add(xDown);
                     yDownList.add(yDown);
                     invalidate();
                     paths.remove(id);
+                    eventTimes.remove(id);
                 }
                 Log.d(TAG," ACTION UP ");
-                Log.d(TAG, " TIME UP : " + System.currentTimeMillis());
                 invalidate();
                 break;
             }
@@ -285,6 +288,10 @@ public class Dessin_item18 extends View {
 
     public ArrayList getEventDownTimes(){return eventDownTimes;}
 
+    public Float getCdX(){return mImageX;}
+
+    public Float getCdY(){return mImageY;}
+
 
     /**
      * Called when replaying history to ensure the dirty region includes all
@@ -315,4 +322,48 @@ public class Dessin_item18 extends View {
         return bitmap.copy(Bitmap.Config.ARGB_8888,false);
     }
 
+    public void orderPaths(){
+        HashMap<Integer,ArrayList<Float>>  tabsX = new HashMap<>();
+        HashMap<Integer,ArrayList<Float>>  tabsY = new HashMap<>();
+        HashMap<Integer,Long> upTimes = new HashMap<>();
+
+        for(int i = 0; i < completedTabsX.size(); i++) {
+            tabsX.put(i, completedTabsX.get(i));
+            tabsY.put(i, completedTabsY.get(i));
+            upTimes.put(i, eventUpTimes.get(i));
+            eventTimes.put(i,eventDownTimes.get(i));
+        }
+
+        for(int i = 0; i < (completedTabsX.size()-1); i++) {
+            for (int j = i+1; j < completedTabsX.size(); j++) {
+                if (eventTimes.get(j) < eventTimes.get(i)) {
+                    ArrayList<Float> x = tabsX.get(i);
+                    ArrayList<Float> y = tabsY.get(i);
+                    long t1 = eventTimes.get(i);
+                    long t2 = upTimes.get(i);
+                    tabsX.put(i, tabsX.get(j));
+                    tabsX.put(j, x);
+                    tabsY.put(i, tabsY.get(j));
+                    tabsY.put(j, y);
+                    upTimes.put(i, upTimes.get(j));
+                    upTimes.put(j, t2);
+                    eventTimes.put(i, eventTimes.get(j));
+                    eventTimes.put(j, t1);
+                }
+            }
+        }
+
+
+        completedTabsX.clear();
+        completedTabsY.clear();
+        eventUpTimes.clear();
+        eventDownTimes.clear();
+
+        for(int i = 0; i < tabsX.size(); i++){
+            completedTabsX.add(tabsX.get(i));
+            completedTabsY.add(tabsY.get(i));
+            eventUpTimes.add(upTimes.get(i));
+            eventDownTimes.add(eventTimes.get(i));
+        }
+    }
 }

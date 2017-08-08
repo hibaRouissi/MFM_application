@@ -48,6 +48,7 @@ public class do_item18 extends Activity {
     private int varRandom;
     private ArrayList eventUpTimes;
     private ArrayList eventDownTimes;
+    private Float mImageX,mImageY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,16 +93,21 @@ public class do_item18 extends Activity {
                     myIntent.putExtra("surname", surname);
                     myIntent.putExtra("birthdate", birthdate);
                     myIntent.putExtra("varRandom", varRandom);
+                    dessin.orderPaths();
                     cartoBitmap = dessin.getCartographie();
                     tableauX = dessin.getTableauX();
                     tableauY = dessin.getTableauY();
                     eventDownTimes = dessin.getEventDownTimes();
                     eventUpTimes = dessin.getEventUpTimes();
+                    mImageX = dessin.getCdX();
+                    mImageY = dessin.getCdY();
                     myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
                     myIntent.putExtra("tableauX", tableauX);
                     myIntent.putExtra("tableauY", tableauY);
                     myIntent.putExtra("eventUpTimes", eventUpTimes);
                     myIntent.putExtra("eventDownTimes", eventDownTimes);
+                    myIntent.putExtra("mImageX",mImageX);
+                    myIntent.putExtra("mImageY",mImageY);
                     startActivity(myIntent);
                     // On ferme l'activité en cours
                     finish();
