@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -49,6 +51,7 @@ import java.util.Locale;
 
 public class comments_item18 extends Activity {
 
+    private static final String TAG = "www.gscop.app" ;
     private String name = "";
     private String surname = "";
     private String birthdate = "";
@@ -78,14 +81,19 @@ public class comments_item18 extends Activity {
     private CheckBox checkBoxCompens;
     private TextView infosPatient;
     private String path = "";
-    private ArrayList tableauX;
-    private ArrayList tableauY;
+    private ArrayList<ArrayList<Float>> tableauX;
+    private ArrayList<ArrayList<Float>> tableauY;
     private Bitmap cartoBitmap;
     private File myFile;
     private String listeComm = " ";
     private int varRandom;
     private TextView textStateSaving;
     private boolean handledClick = false;
+    private ArrayList eventUpTimes;
+    private ArrayList eventDownTimes;
+    private Float mImageX,mImageY;
+    private Long durationTime;
+    private ArrayList isPalm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,8 +108,14 @@ public class comments_item18 extends Activity {
             surname = intent.getStringExtra("surname");
             birthdate = intent.getStringExtra("birthdate");
             path = intent.getStringExtra("path");
-            tableauX = intent.getIntegerArrayListExtra("tableauX");
-            tableauY = intent.getIntegerArrayListExtra("tableauY");
+            tableauX = (ArrayList) intent.getSerializableExtra("tableauX");
+            tableauY = (ArrayList) intent.getSerializableExtra("tableauY");
+            eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
+            eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
+            mImageX = intent.getFloatExtra("mImageX",0f);
+            mImageY = intent.getFloatExtra("mImageY",0f);
+            isPalm = (ArrayList) intent.getSerializableExtra("isPalm");
+            durationTime = intent.getLongExtra("durationTime",0);
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
             try {
                 File f = new File(path, "cartographie.png");
@@ -242,6 +256,12 @@ public class comments_item18 extends Activity {
             myIntent.putExtra("path", path);
             myIntent.putExtra("tableauX", tableauX);
             myIntent.putExtra("tableauY", tableauY);
+            myIntent.putExtra("eventUpTimes", eventUpTimes);
+            myIntent.putExtra("eventDownTimes", eventDownTimes);
+            myIntent.putExtra("mImageX",mImageX);
+            myIntent.putExtra("mImageY",mImageY);
+            myIntent.putExtra("isPalm",isPalm);
+            myIntent.putExtra("durationTime",durationTime);
             startActivity(myIntent);
             // On ferme l'activité en cours
             finish();
@@ -374,25 +394,29 @@ public class comments_item18 extends Activity {
         // On change de page
         document.newPage();
         // 2 colonnes, une pour chaque tableau
-        PdfPTable table = new PdfPTable(2);
-        table.setHorizontalAlignment(Element.ALIGN_CENTER);
-        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
-        // Titres : colonne 1 = coordonnées en X , colonne 2 = coordonnées en Y
-        table.addCell("Coordonnées en X");
-        table.addCell("Coordonnées en Y");
-        table.setHeaderRows(1);
-        // On met les cellules titre en gris
-        PdfPCell[] cells = table.getRow(0).getCells();
-        for (PdfPCell cell : cells) {
-            cell.setBackgroundColor(BaseColor.GRAY);
+        Log.d(TAG," SIZE : " + tableauX.size());
+        for( int j = 0; j < tableauX.size(); j++) {
+            document.add( Chunk.NEWLINE );
+            PdfPTable table = new PdfPTable(2);
+            table.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+            // Titres : colonne 1 = coordonnées en X , colonne 2 = coordonnées en Y
+            table.addCell("Coordonnées en X");
+            table.addCell("Coordonnées en Y");
+            table.setHeaderRows(1);
+            // On met les cellules titre en gris
+            PdfPCell[] cells = table.getRow(0).getCells();
+            for (PdfPCell cell : cells) {
+                cell.setBackgroundColor(BaseColor.GRAY);
+            }
+            // On parcourt les coordonnées en X et on les ajoute en colonne 1
+            for (int i = 0; i < tableauX.get(j).size(); i++) {
+                table.addCell(tableauX.get(j).get(i).toString());
+                table.addCell(tableauY.get(j).get(i).toString());
+            }
+            // On ajoute le tableau au document
+            document.add(table);
         }
-        // On parcourt les coordonnées en X et on les ajoute en colonne 1
-        for (int i = 1; i <= tableauX.size() - 1; i++) {
-            table.addCell(tableauX.get(i).toString());
-            table.addCell(tableauY.get(i).toString());
-        }
-        // On ajoute le tableau au document
-        document.add(table);
 
         //Step 5: Close the document
         document.close();

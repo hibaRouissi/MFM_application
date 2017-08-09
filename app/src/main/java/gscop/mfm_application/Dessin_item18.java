@@ -31,16 +31,20 @@ public class Dessin_item18 extends View {
     private float mImageX, mImageY;
     private final Paint paint = new Paint();
     private final Paint mPaintImage = new Paint();
+    private Long lastUpTime;
 
     private HashMap<Integer, Path> paths = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsX = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsY = new HashMap<>();
     private HashMap<Integer,Long> eventTimes = new HashMap<>();
+    private HashMap<Integer,Boolean> isPalmTouch = new HashMap<>();
+
     private ArrayList<Path> completedPaths = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsY = new ArrayList<>();
     private ArrayList<Long> eventDownTimes = new ArrayList<>();
     private ArrayList<Long> eventUpTimes = new ArrayList<>();
+    private ArrayList<Boolean> isPalm = new ArrayList<>();
 
     private final RectF dirtyRect = new RectF();
 
@@ -115,18 +119,38 @@ public class Dessin_item18 extends View {
 
         canvas.drawBitmap(image, mImageX, mImageY, mPaintImage);
 
-        for (Path fingerPath : paths.values()) {
+        for (int i = 0; i < paths.size(); i++) {
+            Path fingerPath = paths.get(i);
             if (fingerPath != null) {
                 canvas.drawPoint(xDown, yDown, paint);
+                if(isPalmTouch.get(i)){
+                    paint.setColor(Color.BLUE);
+                }
+                else{
+                    paint.setColor(Color.RED);
+                }
                 canvas.drawPath(fingerPath, paint);
             }
         }
 
         for (int i = 0; i < xDownList.size(); i++) {
+            if(isPalm.get(i)){
+                paint.setColor(Color.BLUE);
+            }
+            else{
+                paint.setColor(Color.RED);
+            }
             canvas.drawPoint(xDownList.get(i), yDownList.get(i), paint);
         }
 
-        for (Path completedPath : completedPaths) {
+        for (int i = 0; i < completedPaths.size(); i++) {
+            Path completedPath = completedPaths.get(i);
+            if(isPalm.get(i)){
+                paint.setColor(Color.BLUE);
+            }
+            else{
+                paint.setColor(Color.RED);
+            }
             canvas.drawPath(completedPath, paint);
         }
 
@@ -176,9 +200,13 @@ public class Dessin_item18 extends View {
                         Log.d(TAG, " MAJOR : " + event.getToolMajor(id) + " MINOR : " + event.getToolMinor(id));
                         Log.d(TAG, " POINTS : " + event.getPointerCount());
 
-                        if(event.getSize(id) >= 0.035){
+                        if(event.getSize(id) >= 0.025){
                             Log.d(TAG," PALM TOUCH ");
-
+                            isPalmTouch.put(id,true);
+                        }
+                        else{
+                            Log.d(TAG, " FINGER TOUCH ");
+                            isPalmTouch.put(id,false);
                         }
                         invalidate();
 
@@ -247,10 +275,13 @@ public class Dessin_item18 extends View {
                     completedTabsY.add(tableauY);
                     eventDownTimes.add(eventTimes.get(id));
                     eventUpTimes.add(System.currentTimeMillis());
+                    isPalm.add(isPalmTouch.get(id));
                     Log.d(TAG," DURATION TIME : " + (System.currentTimeMillis() - eventTimes.get(id)));
                     xDownList.add(xDown);
                     yDownList.add(yDown);
+                    lastUpTime = System.currentTimeMillis();
                     invalidate();
+                    isPalmTouch.remove(id);
                     paths.remove(id);
                     eventTimes.remove(id);
                 }
@@ -268,7 +299,11 @@ public class Dessin_item18 extends View {
         return true;
     }
 
-
+    public Long getDurationTime(){
+        long durationTime;
+        durationTime = lastUpTime - eventDownTimes.get(0);
+        return durationTime;
+    }
 
     public Bitmap getCartographie() {return custom_image;}
 
@@ -291,6 +326,8 @@ public class Dessin_item18 extends View {
     public Float getCdX(){return mImageX;}
 
     public Float getCdY(){return mImageY;}
+
+    public ArrayList getBooleanPalm() {return isPalm;}
 
 
     /**
@@ -323,8 +360,6 @@ public class Dessin_item18 extends View {
     }
 
     public void orderPaths(){
-        HashMap<Integer,ArrayList<Float>>  tabsX = new HashMap<>();
-        HashMap<Integer,ArrayList<Float>>  tabsY = new HashMap<>();
         HashMap<Integer,Long> upTimes = new HashMap<>();
 
         for(int i = 0; i < completedTabsX.size(); i++) {
@@ -332,6 +367,7 @@ public class Dessin_item18 extends View {
             tabsY.put(i, completedTabsY.get(i));
             upTimes.put(i, eventUpTimes.get(i));
             eventTimes.put(i,eventDownTimes.get(i));
+            isPalmTouch.put(i,isPalm.get(i));
         }
 
         for(int i = 0; i < (completedTabsX.size()-1); i++) {
@@ -341,6 +377,7 @@ public class Dessin_item18 extends View {
                     ArrayList<Float> y = tabsY.get(i);
                     long t1 = eventTimes.get(i);
                     long t2 = upTimes.get(i);
+                    boolean b = isPalmTouch.get(i);
                     tabsX.put(i, tabsX.get(j));
                     tabsX.put(j, x);
                     tabsY.put(i, tabsY.get(j));
@@ -349,6 +386,8 @@ public class Dessin_item18 extends View {
                     upTimes.put(j, t2);
                     eventTimes.put(i, eventTimes.get(j));
                     eventTimes.put(j, t1);
+                    isPalmTouch.put(i,isPalmTouch.get(j));
+                    isPalmTouch.put(j,b);
                 }
             }
         }
@@ -358,12 +397,14 @@ public class Dessin_item18 extends View {
         completedTabsY.clear();
         eventUpTimes.clear();
         eventDownTimes.clear();
+        isPalm.clear();
 
         for(int i = 0; i < tabsX.size(); i++){
             completedTabsX.add(tabsX.get(i));
             completedTabsY.add(tabsY.get(i));
             eventUpTimes.add(upTimes.get(i));
             eventDownTimes.add(eventTimes.get(i));
+            isPalm.add(isPalmTouch.get(i));
         }
     }
 }

@@ -44,6 +44,7 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     private ArrayList<Long> animTimesInit = new ArrayList<>();
 
     private ArrayList<Path> paths = new ArrayList<>();
+    private ArrayList<Boolean> isPalm = new ArrayList<>();
     private HashMap<Integer,Path> animPaths = new HashMap<>();
 
     private HashMap<Integer,Boolean> animRunning = new HashMap<>();
@@ -132,6 +133,12 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             }
             else{
                 for(int j = 0; j < paths.size(); j++){
+                    if(isPalm.get(j)){
+                        paint.setColor(Color.BLUE);
+                    }
+                    else{
+                        paint.setColor(Color.RED);
+                    }
                     canvas.drawPath(paths.get(j),paint);
                 }
             }
@@ -214,14 +221,24 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             }
 
             // Draw Path
+            if(isPalm.get(j)){
+                paint.setColor(Color.BLUE);
+            }
+            else{
+                paint.setColor(Color.RED);
+            }
             canvas.drawPath(animPaths.get(j),paint);
-
         }
-
     }
 
     public void drawStatic(Canvas canvas, int j){
         if(animPathsMeasure.get(j) != null){
+            if(isPalm.get(j)){
+                paint.setColor(Color.BLUE);
+            }
+            else{
+                paint.setColor(Color.RED);
+            }
             canvas.drawPath(paths.get(j),paint);
         }
     }
@@ -252,6 +269,10 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     public void getCdPosition(Float x, Float y){
         mImageX = x;
         mImageY = y;
+    }
+
+    public void getIsPalm(ArrayList<Boolean> palm){
+        isPalm = palm;
     }
 
 }

@@ -48,7 +48,9 @@ public class do_item18 extends Activity {
     private int varRandom;
     private ArrayList eventUpTimes;
     private ArrayList eventDownTimes;
+    private ArrayList isPalm;
     private Float mImageX,mImageY;
+    private Long durationTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +103,8 @@ public class do_item18 extends Activity {
                     eventUpTimes = dessin.getEventUpTimes();
                     mImageX = dessin.getCdX();
                     mImageY = dessin.getCdY();
+                    isPalm = dessin.getBooleanPalm();
+                    durationTime = dessin.getDurationTime();
                     myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
                     myIntent.putExtra("tableauX", tableauX);
                     myIntent.putExtra("tableauY", tableauY);
@@ -108,6 +112,8 @@ public class do_item18 extends Activity {
                     myIntent.putExtra("eventDownTimes", eventDownTimes);
                     myIntent.putExtra("mImageX",mImageX);
                     myIntent.putExtra("mImageY",mImageY);
+                    myIntent.putExtra("isPalm",isPalm);
+                    myIntent.putExtra("durationTime",durationTime);
                     startActivity(myIntent);
                     // On ferme l'activité en cours
                     finish();
