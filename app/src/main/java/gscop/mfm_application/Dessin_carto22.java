@@ -20,7 +20,7 @@ import java.util.HashMap;
  * Created by Alison.rl on 30/07/2017.
  */
 
-public class Dessin_carto18 extends View implements View.OnClickListener {
+public class Dessin_carto22 extends View implements View.OnClickListener {
 
     private Paint paint ;
 
@@ -49,17 +49,17 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     private HashMap<Integer,Long> animLastUpdated = new HashMap<>();
 
 
-    public Dessin_carto18(Context context) {
+    public Dessin_carto22(Context context) {
         super(context);
         init();
     }
 
-    public Dessin_carto18(Context context, @Nullable AttributeSet attrs) {
+    public Dessin_carto22(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public Dessin_carto18(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public Dessin_carto22(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -69,11 +69,11 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setAntiAlias(true);
-        paint.setColor(Color.BLUE);
+        paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(20);
+        paint.setStrokeWidth(10);
 
-        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18);
+        image = BitmapFactory.decodeResource(getResources(), R.drawable.item22);
         image = getResizeBitmap(image);
         animStop = true;
         this.setOnClickListener(this);
@@ -241,9 +241,9 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     }
 
     private Bitmap getResizeBitmap(Bitmap bitmap){
-        // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
+        // L'image serait redimensionné pour le taille du quadrillage ( 600px avec 300ppi de résolution)
         float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
-        int mImageWidth = 1317;
+        int mImageWidth = 600 ;
         int mImageHeight = Math.round(mImageWidth*aspect_ratio);
         bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
         return bitmap.copy(Bitmap.Config.ARGB_8888,false);
@@ -273,3 +273,4 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     }
 
 }
+

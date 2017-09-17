@@ -9,7 +9,9 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 
 public class carto_item22 extends Activity {
 
+    private static final String TAG = "g.scop.mfm_application" ;
     private String name = "";
     private String surname = "";
     private String birthdate = "";
@@ -36,7 +39,13 @@ public class carto_item22 extends Activity {
     private final Context context = this;
     private ArrayList tableauX;
     private ArrayList tableauY;
+    private ArrayList isPalm;
     private int varRandom;
+    private Dessin_carto22 dessin_carto22;
+    private ArrayList eventUpTimes;
+    private ArrayList eventDownTimes;
+    private Float mImageX,mImageY;
+    private Long durationTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +53,7 @@ public class carto_item22 extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.carto_item22);
 
-        carto = (ImageView) findViewById(R.id.cartographieItem22);
+        dessin_carto22 = (Dessin_carto22) findViewById(R.id.dessin_carto22);
 
         // On récupère les infos de l'intent de l'activité précédente
         Intent intent = getIntent();
@@ -53,20 +62,32 @@ public class carto_item22 extends Activity {
             surname = intent.getStringExtra("surname");
             birthdate = intent.getStringExtra("birthdate");
             path = intent.getStringExtra("path");
+            tableauX = intent.getIntegerArrayListExtra("tableauX");
+            tableauY = intent.getIntegerArrayListExtra("tableauY");
+            eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
+            eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
+            mImageX = intent.getFloatExtra("mImageX",0f);
+            mImageY = intent.getFloatExtra("mImageY",0f);
+            isPalm = (ArrayList) intent.getSerializableExtra("isPalm");
+            durationTime = intent.getLongExtra("durationTime",0);
+            dessin_carto22.getTabX(tableauX);
+            dessin_carto22.getTabY(tableauY);
+            dessin_carto22.getEventUpTimes(eventUpTimes);
+            dessin_carto22.getEventDownTimes(eventDownTimes);
+            dessin_carto22.getCdPosition(mImageX,mImageY);
+            dessin_carto22.getIsPalm(isPalm);
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
             try {
                 File f = new File(path, "cartographie.png");
                 cartoBitmap = BitmapFactory.decodeStream(new FileInputStream(f));
-                carto.setImageBitmap(cartoBitmap);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            tableauX = intent.getIntegerArrayListExtra("tableauX");
-            tableauY = intent.getIntegerArrayListExtra("tableauY");
         }
 
         infosPatient = (TextView) findViewById(R.id.infosPatient);
-        infosPatient.setText(" Patient : " + name + " " + surname + " \n Né(e) le : " + birthdate);
+        Log.d(TAG," duration : " + durationTime);
+        infosPatient.setText("Patient : " + name + " " + surname + " \nDurée : " + durationTime/1000 + " secondes ");
 
         // Pour le bouton "Quitter"
         buttonExit = (Button) findViewById(R.id.buttonExit);
@@ -100,9 +121,9 @@ public class carto_item22 extends Activity {
             @Override
             public void onClick(View v) {
                 boutonRecommencer.setBackgroundColor(Color.GRAY);
-                // Quand on clique sur le bouton recommencer, ça retourne sur l'interface do_item22
+                // Quand on clique sur le bouton recommencer, on retourne sur l'interface do_item22
                 builder.setMessage("Êtes-vous certain de vouloir recommencer l'exercice ? \n (le tracé sera perdu)")
-                        .setCancelable(true)
+                        .setCancelable(false)
                         .setNegativeButton("Non", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // On remet le bouton recommencer en bleu
@@ -112,7 +133,7 @@ public class carto_item22 extends Activity {
                         })
                         .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // On revient à l'écran de réalisation de l'item 22
+                                //  On revient à l'écran de réalisation de l'item 22
                                 Intent myIntent = new Intent(carto_item22.this, do_item22.class);
                                 myIntent.putExtra("name", name);
                                 myIntent.putExtra("surname", surname);
@@ -134,7 +155,7 @@ public class carto_item22 extends Activity {
             @Override
             public void onClick(View v) {
                 boutonValider.setBackgroundColor(Color.GRAY);
-                // Quand on clique sur le bouton valider, ça ouvre l'interface des commentaires du kiné
+                // Quand on clique sur le bouton valider, on ouvre l'interface des commentaires du kiné
                 // Si varRandom = 1, on doit faire la version papier avant d'accéder aux commentaires
                 if (varRandom == 1) {
                     // On demande de réaliser l'item 22 version papier
@@ -152,6 +173,12 @@ public class carto_item22 extends Activity {
                                     myIntent.putExtra("tableauX", tableauX);
                                     myIntent.putExtra("tableauY", tableauY);
                                     myIntent.putExtra("varRandom", varRandom);
+                                    myIntent.putExtra("eventUpTimes", eventUpTimes);
+                                    myIntent.putExtra("eventDownTimes", eventDownTimes);
+                                    myIntent.putExtra("mImageX",mImageX);
+                                    myIntent.putExtra("mImageY",mImageY);
+                                    myIntent.putExtra("isPalm",isPalm);
+                                    myIntent.putExtra("durationTime",durationTime);
                                     startActivity(myIntent);
                                     // On ferme l'activité en cours
                                     finish();
@@ -169,6 +196,12 @@ public class carto_item22 extends Activity {
                     myIntent.putExtra("tableauX", tableauX);
                     myIntent.putExtra("tableauY", tableauY);
                     myIntent.putExtra("varRandom", varRandom);
+                    myIntent.putExtra("eventUpTimes", eventUpTimes);
+                    myIntent.putExtra("eventDownTimes", eventDownTimes);
+                    myIntent.putExtra("mImageX",mImageX);
+                    myIntent.putExtra("mImageY",mImageY);
+                    myIntent.putExtra("isPalm",isPalm);
+                    myIntent.putExtra("durationTime",durationTime);
                     startActivity(myIntent);
                     // On ferme l'activité en cours
                     finish();
@@ -210,4 +243,5 @@ public class carto_item22 extends Activity {
         }
         return back_answer;
     }
+
 }

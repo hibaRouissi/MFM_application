@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -20,15 +21,15 @@ import java.util.HashMap;
  * Created by Alison.rl on 30/07/2017.
  */
 
-public class Dessin_carto18 extends View implements View.OnClickListener {
+public class Dessin_carto19 extends View implements View.OnClickListener {
 
     private Paint paint ;
+    private final Paint mPaintRect = new Paint();
 
     private Boolean animStop;
     private int stop = 0;
-    private Bitmap image;
-    private Float mImageX,mImageY;
-
+    private float mImageX,mImageY;
+    private int mRectX, mRectY;
     private static final String TAG = "gscop.mfm_application";
 
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
@@ -49,17 +50,17 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     private HashMap<Integer,Long> animLastUpdated = new HashMap<>();
 
 
-    public Dessin_carto18(Context context) {
+    public Dessin_carto19(Context context) {
         super(context);
         init();
     }
 
-    public Dessin_carto18(Context context, @Nullable AttributeSet attrs) {
+    public Dessin_carto19(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public Dessin_carto18(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public Dessin_carto19(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -73,8 +74,12 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(20);
 
-        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18);
-        image = getResizeBitmap(image);
+        mPaintRect.setAntiAlias(true);
+        mPaintRect.setColor(Color.BLACK);
+        mPaintRect.setStyle(Paint.Style.STROKE);
+        mPaintRect.setStrokeWidth(6);
+
+
         animStop = true;
         this.setOnClickListener(this);
     }
@@ -121,7 +126,14 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        canvas.drawBitmap(image,mImageX,mImageY,null);
+        mRectX = (int) mImageX - 210;
+        mRectY = (int) mImageY + 100;
+
+
+        Rect rect = new Rect(mRectX, mRectY,(mRectX + 420),(mRectY + 110));
+        canvas.drawRect(rect,mPaintRect);
+        Rect rect1 = new Rect(mRectX ,(mRectY - 210),(mRectX + 420),(mRectY - 100));
+        canvas.drawRect(rect1,mPaintRect);
 
         if(animStop){
             if(paths.size() == 0 && completedTabsX.size() != 0) {
@@ -240,14 +252,14 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
         }
     }
 
-    private Bitmap getResizeBitmap(Bitmap bitmap){
-        // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
-        float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
-        int mImageWidth = 1317;
-        int mImageHeight = Math.round(mImageWidth*aspect_ratio);
-        bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
-        return bitmap.copy(Bitmap.Config.ARGB_8888,false);
-    }
+//    private Bitmap getResizeBitmap(Bitmap bitmap){
+//        // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
+//        float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
+//        int mImageWidth = 1317;
+//        int mImageHeight = Math.round(mImageWidth*aspect_ratio);
+//        bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
+//        return bitmap.copy(Bitmap.Config.ARGB_8888,false);
+//    }
 
     public void getTabX(ArrayList<ArrayList<Float>> tabsX) {
         completedTabsX = tabsX;

@@ -7,17 +7,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.RectF;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.lang.reflect.Array;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -31,7 +27,7 @@ public class Dessin_item18 extends View {
     private float mImageX, mImageY;
     private final Paint paint = new Paint();
     private final Paint mPaintImage = new Paint();
-    private Long lastUpTime;
+    private Long lastUpTime = 0l;
 
     private HashMap<Integer, Path> paths = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsX = new HashMap<>();
@@ -95,11 +91,11 @@ public class Dessin_item18 extends View {
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setAntiAlias(true);
-        paint.setColor(Color.RED);
+        paint.setColor(Color.TRANSPARENT);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(20);
 
-        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18_test);
+        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18);
         image = getResizeBitmap(image);
 
         Log.d(TAG," INIT ");
@@ -200,7 +196,8 @@ public class Dessin_item18 extends View {
                         Log.d(TAG, " MAJOR : " + event.getToolMajor(id) + " MINOR : " + event.getToolMinor(id));
                         Log.d(TAG, " POINTS : " + event.getPointerCount());
 
-                        if(event.getSize(id) >= 0.025){
+                        // set in 1 for never change the color
+                        if(event.getSize(id) >= 1){
                             Log.d(TAG," PALM TOUCH ");
                             isPalmTouch.put(id,true);
                         }
@@ -300,9 +297,14 @@ public class Dessin_item18 extends View {
     }
 
     public Long getDurationTime(){
-        long durationTime;
-        durationTime = lastUpTime - eventDownTimes.get(0);
-        return durationTime;
+        Long durationTime;
+        if(eventDownTimes.size() != 0) {
+            durationTime = lastUpTime - eventDownTimes.get(0);
+            return durationTime;
+        }
+        else{
+            return 0l;
+        }
     }
 
     public Bitmap getCartographie() {return custom_image;}

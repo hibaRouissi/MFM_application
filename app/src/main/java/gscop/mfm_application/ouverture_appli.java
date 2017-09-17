@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -20,7 +21,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import static android.content.ContentValues.TAG;
 
 public class ouverture_appli extends Activity implements View.OnClickListener {
 
@@ -31,6 +36,7 @@ public class ouverture_appli extends Activity implements View.OnClickListener {
     private Button boutonValider;
     private Button boutonEffacer;
     private Button buttonExit;
+    private Button boutonPatient;
     private final Context context = this;
     private String name;
     private String surname;
@@ -70,14 +76,14 @@ public class ouverture_appli extends Activity implements View.OnClickListener {
 
         nomEntre = (EditText) findViewById(R.id.nom);
         prenomEntre = (EditText) findViewById(R.id.prenom);
-        // On range le clavier quand le champ prénom n'est plus sélectionné
+        //On range le clavier quand le champ prénom n'est plus sélectionné
         prenomEntre.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
                     hideKeyboard(v);
-                }
-            }
+               }
+           }
         });
         texteDate = (TextView) findViewById(R.id.texteBirthdate);
 
@@ -203,6 +209,15 @@ public class ouverture_appli extends Activity implements View.OnClickListener {
                         });
                 AlertDialog alert = builder.create();
                 alert.show();
+            }
+        });
+
+        boutonPatient = (Button) findViewById(R.id.boutonPatient);
+        boutonPatient.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Intent intent = new Intent(ouverture_appli.this,Patients.class);
+                startActivity(intent);
             }
         });
     }

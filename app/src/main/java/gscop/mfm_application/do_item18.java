@@ -1,5 +1,6 @@
 package gscop.mfm_application;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Path;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,17 +24,17 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import static android.content.ContentValues.TAG;
 
 public class do_item18 extends Activity {
 
+    private static final String TAG = "www.gscop.mfm" ;
     private Button boutonTerminer;
     private final Context context = this;
     private Button move_CD;
@@ -59,8 +61,9 @@ public class do_item18 extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.do_item18);
 
-        // Permet de cacher la barre de notifications
+        // Permet de cacher la barre de notifications et bloquer l'expansion
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //------------------------------------------------------------------
 
         dessin = (Dessin_item18) findViewById(R.id.drawingItem18);
         state = (TextView) findViewById(R.id.enCours);
@@ -80,7 +83,7 @@ public class do_item18 extends Activity {
             @Override
             public void onClick(View v) {
                 if(click_first == true){
-                    Toast toast = Toast.makeText(context,R.string.toast_block,Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(context,R.string.toast_blockcd,Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP, 0, 0);
                     toast.show();
                 }
@@ -127,7 +130,7 @@ public class do_item18 extends Activity {
             public void onClick(View v){
                 if(click_first == false){
                     dessin.getBooleanClick(true);
-                    state.setText(R.string.move);
+                    state.setText(R.string.movecd);
                     // Pour changer l'image background du bouton
                     move_CD.setBackgroundResource(R.drawable.dismovecd_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check_block);
@@ -208,6 +211,21 @@ public class do_item18 extends Activity {
             }
         }
         return directory.getAbsolutePath();
+    }
+
+    //permet cacher vite le status bar (Notifications)
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        Log.i(TAG, "onWindowFocusChanged()");
+        try {
+            if (!hasFocus) {
+                Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                this.sendBroadcast(it);
+
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

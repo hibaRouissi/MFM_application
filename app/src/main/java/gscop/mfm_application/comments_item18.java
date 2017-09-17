@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -33,9 +35,16 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfCopy;
+import com.itextpdf.text.pdf.PdfDocument;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfSmartCopy;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.codec.Base64;
+import com.itextpdf.text.pdf.hyphenation.TernaryTree;
+import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,10 +52,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 public class comments_item18 extends Activity {
@@ -94,6 +106,23 @@ public class comments_item18 extends Activity {
     private Float mImageX,mImageY;
     private Long durationTime;
     private ArrayList isPalm;
+    private ProgressBar progressbar;
+    Boolean bmergePdf = false;
+
+    // Pdf folder
+    File pdfFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            , "Error");
+
+    // Stamp Pdf
+    String timeStamp = new SimpleDateFormat("dd/MM/yyyy à HH:mm", Locale.FRANCE).format(new Date());
+    String timeStampSimple = new SimpleDateFormat("dd_MM_yyyy", Locale.FRANCE).format(new Date());
+
+
+    private int docsCount = 1;
+    private boolean lastPdf = false;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +159,9 @@ public class comments_item18 extends Activity {
             checkBoxCompens = (CheckBox) findViewById(R.id.checkBoxCompens);
         }
 
+        pdfFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                , "patient_" + name + "_" + surname);
+
         radioGroupCotationTablet = (RadioGroup) findViewById(R.id.radioGroupCotationTablet);
         textCotationTablet = (TextView) findViewById(R.id.textCotationTablet);
         boutonCotation0Tablet = (RadioButton) findViewById(R.id.radioButton0Tablet);
@@ -159,6 +191,7 @@ public class comments_item18 extends Activity {
 
         infosPatient = (TextView) findViewById(R.id.PatientName);
         infosPatient.setText("Patient : " + name + " " + surname + " \nNé(e) le : " + birthdate);
+        progressbar = (ProgressBar) findViewById(R.id.enregistBar);
 
         // Pour le bouton "Enregistrer"
         boutonEnregistrer = (Button) findViewById(R.id.buttonSave);
@@ -167,16 +200,131 @@ public class comments_item18 extends Activity {
             public void onClick(View v) {
                 // On s'assure de ne pouvoir cliquer qu'une seule fois sur le bouton
                 if (!handledClick) {
-                    boutonEnregistrer.setBackgroundColor(Color.GRAY);
                     handledClick = true;
-                    // On évite que la personne clique 2 fois sur le bouton en le rendant non cliquable
+                    textStateSaving.setText(R.string.checkData);
                     boutonEnregistrer.setClickable(false);
-//                    textStateSaving.setText(R.string.checkData);
-                    actionEnregistrer();
+                    boutonEnregistrer.setBackgroundColor(Color.GRAY);
+                    preCreatePdf();
                 }
             }
         });
     }
+
+    private class createPdfTask extends AsyncTask<Void,Integer,Void>{
+
+        Boolean problemPdf = false;
+
+        @Override
+        protected void onPreExecute(){
+            textStateSaving.setText(R.string.pdfsaving);
+            progressbar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try{
+                createPdf();
+            } catch (FileNotFoundException | DocumentException e) {
+                e.printStackTrace();
+                problemPdf = true;
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void Void){
+            boutonEnregistrer.setBackgroundColor(getResources().getColor(R.color.myBlue));
+            if (problemPdf){
+                textStateSaving.setText(R.string.pbPDF);
+            }
+            else{
+                textStateSaving.setText(R.string.savedOK);
+                saveSQL();
+                promptForNextAction();
+            }
+            progressbar.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void preCreatePdf(){
+        // On crée un dossier NOM_prenom du patient s'il n'existe pas déjà
+        boolean isDirectoryCreated = pdfFolder.exists();
+        if (!isDirectoryCreated) {
+            isDirectoryCreated = pdfFolder.mkdir();
+            Log.d(TAG," Creating folder ");
+        }
+        if(isDirectoryCreated){
+            Log.d(TAG," Folder created ");
+        }
+
+
+        // See the last pdf created in the actual day
+        while(!lastPdf){
+            String filePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + docsCount + ".pdf";
+            myFile = new File(filePath);
+            boolean isFile = myFile.exists();
+            if(isFile){
+                Log.d(TAG, " File exist ");
+                docsCount++;
+            }
+            else{
+                Log.d(TAG, " Last pdf is : " + (docsCount-1));
+                lastPdf = true;
+            }
+        }
+
+        if(docsCount == 1){
+            Log.d(TAG," First pdf of the day ");
+            bmergePdf = false;
+            actionEnregistrer();
+        }
+        else {
+            // Make dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setMessage("Est-ce que vous voulez enregistre dans le dernier pdf")
+                    .setCancelable(false)
+                    .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            bmergePdf = true;
+                            actionEnregistrer();
+
+                        }
+                    })
+                    .setNegativeButton("Non", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            bmergePdf = false;
+                            actionEnregistrer();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
+
+    private void saveSQL(){
+        boolean first = true;
+        Log.d(TAG, " SAVE SQL ");
+        DbHelper dbHelper = new DbHelper(this);
+        Patient patient = new Patient(0,name,surname,birthdate);
+        List<Patient> listPatient = dbHelper.selectAllPatients();
+        for(Iterator iterator = listPatient.iterator(); iterator.hasNext();){
+            Patient p = (Patient) iterator.next();
+            Log.d(TAG, p.toString());
+            Log.d(TAG, " ID : " + p.getId());
+            if(p == patient){
+                first = false;
+            }
+        }
+        if(first){
+            dbHelper.insertPatient(patient);
+        }
+        else{
+            Log.d(TAG, " Patient already created in database ");
+        }
+    }
+
+
 
     /**
      * Donne les actions à réaliser lorsque l'utilisateur clique sur le bouton "Enregistrer"
@@ -190,7 +338,6 @@ public class comments_item18 extends Activity {
             // radioGroup : cotation tablette
             if (boutonCotation0Tablet.isChecked() || boutonCotation1Tablet.isChecked() || boutonCotation2Tablet.isChecked() || boutonCotation3Tablet.isChecked() || boutonCotationNSPTablet.isChecked()) {
                 textCotationTablet.setError(null);
-                textStateSaving.setText(R.string.pdfsaving);
                 // --------------------- on récupère les commentaires du kiné -------------------
                 // ------- COTATION PAPIER
                 int radioButtonSelectedID = radioGroupCotationPaper.getCheckedRadioButtonId();
@@ -214,15 +361,8 @@ public class comments_item18 extends Activity {
                 if (checkBoxAppuiPaume.isChecked())
                     listeComm = listeComm + checkBoxAppuiPaume.getText() + " \n ";
                 commentaire = comments.getText().toString();
-                // ------------------------------------------------------------------------------
-                try {
-                    // ----------- CREATION DU PDF -------------
-                    createPdf();
-                    textStateSaving.setText(R.string.savedOK);
-                } catch (FileNotFoundException | DocumentException e) {
-                    e.printStackTrace();
-                    textStateSaving.setText(R.string.pbPDF);
-                }
+                // ----------- CREATION DU PDF -------------
+                new createPdfTask().execute();
             } else {
                 boutonEnregistrer.setBackgroundColor(getResources().getColor(R.color.myBlue));
                 boutonEnregistrer.setClickable(true);
@@ -286,23 +426,8 @@ public class comments_item18 extends Activity {
      * @throws DocumentException
      */
     private void createPdf() throws FileNotFoundException, DocumentException {
-        // On crée un dossier NOM_prenom du patient s'il n'existe pas déjà
-        File pdfFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                , "patient_" + name + "_" + surname);
-        boolean isDirectoryCreated = pdfFolder.exists();
-        if (!isDirectoryCreated) {
-            isDirectoryCreated = pdfFolder.mkdir();
-        }
-        if (isDirectoryCreated) {
-            Toast.makeText(getApplicationContext(), R.string.directoryExist, Toast.LENGTH_SHORT).show();
-        }
 
-        //Create time stamp
-        String timeStamp = new SimpleDateFormat("dd_MM_yyyy__HH_mm_ss", Locale.FRANCE).format(new Date());
-        String timeStampSimple = new SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(new Date());
-
-        // On crée le nom du fichier pdf à enregistrer
-        String filePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStamp + "_" + "item18.pdf";
+        String filePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + docsCount + ".pdf";
         myFile = new File(filePath);
         OutputStream output = new FileOutputStream(myFile);
 
@@ -310,6 +435,7 @@ public class comments_item18 extends Activity {
         Document document = new Document(PageSize.LETTER);
         document.setMarginMirroring(true);
         document.setMarginMirroringTopBottom(true);
+
 
         // Step 2 : on instantie le PdfWriter
         PdfWriter.getInstance(document, output);
@@ -333,8 +459,7 @@ public class comments_item18 extends Activity {
         paragraphInfosTitre.add("\n\n INFORMATIONS PATIENT : \n");
         document.add(paragraphInfosTitre);
 
-        String strText = " Patient : " + name + " " + surname +
-                "\n Date de naissance : " + birthdate + "\n \n";
+        String strText = " Patient : " + name + " " + surname + "\n Date de naissance : " + birthdate + "\n \n";
         Paragraph paragraphInfos = new Paragraph();
         paragraphInfos.add(strText);
         document.add(paragraphInfos);
@@ -345,9 +470,7 @@ public class comments_item18 extends Activity {
         paragraphInfosItemTitre.add("\n ITEM 18 :");
         document.add(paragraphInfosItemTitre);
 
-        strText = "réalisé le : " + timeStampSimple + "\n" +
-                "cotation sur papier : " + cotationPaper + "\n" +
-                "cotation sur tablette : " + cotationTablet + "\n \n";
+        strText = "réalisé le : " + timeStamp + "\n" + "cotation sur papier : " + cotationPaper + "\n" + "cotation sur tablette : " + cotationTablet + "\n \n";
         Paragraph paragraphInfosItem = new Paragraph();
         paragraphInfosItem.add(strText);
         document.add(paragraphInfosItem);
@@ -386,16 +509,21 @@ public class comments_item18 extends Activity {
             e.printStackTrace();
         }
 
+
         Paragraph paragraphCarto = new Paragraph();
         paragraphCarto.add(trueImage);
         document.add(paragraphCarto);
 
         // TABLEAU DES COORDONNEES
-        // On change de page
+        //On change de page
         document.newPage();
         // 2 colonnes, une pour chaque tableau
         Log.d(TAG," SIZE : " + tableauX.size());
         for( int j = 0; j < tableauX.size(); j++) {
+            Paragraph paragraphTab = new Paragraph();
+            paragraphTab.setFont(myFontTitre);
+            paragraphTab.add("\n Tableau " + (j+1) + "\n");
+            document.add(paragraphTab);
             document.add( Chunk.NEWLINE );
             PdfPTable table = new PdfPTable(2);
             table.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -410,9 +538,9 @@ public class comments_item18 extends Activity {
                 cell.setBackgroundColor(BaseColor.GRAY);
             }
             // On parcourt les coordonnées en X et on les ajoute en colonne 1
-            for (int i = 0; i < tableauX.get(j).size(); i++) {
-                table.addCell(tableauX.get(j).get(i).toString());
-                table.addCell(tableauY.get(j).get(i).toString());
+            for (int k = 0; k < tableauX.get(j).size(); k++) {
+                table.addCell(tableauX.get(j).get(k).toString());
+                table.addCell(tableauY.get(j).get(k).toString());
             }
             // On ajoute le tableau au document
             document.add(table);
@@ -421,7 +549,41 @@ public class comments_item18 extends Activity {
         //Step 5: Close the document
         document.close();
 
-        promptForNextAction();
+        if(bmergePdf) {
+            try {
+                String lastFilePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + (docsCount-1) + ".pdf";
+                String newFilePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + (docsCount+1) + ".pdf";
+
+                File lastFile = new File(lastFilePath);
+                File newFile = new File(newFilePath);
+
+                PdfReader reader = new PdfReader(filePath);
+                PdfReader cover = new PdfReader(lastFilePath);
+                Document mergeDocument = new Document();
+                PdfCopy copy = new PdfCopy(mergeDocument, new FileOutputStream(newFile));
+                mergeDocument.open();
+                copy.addDocument(cover);
+                copy.addDocument(reader);
+                mergeDocument.close();
+                cover.close();
+                reader.close();
+                lastFile.delete();
+                myFile.delete();
+
+                PdfReader make = new PdfReader(newFilePath);
+                Document merge = new Document();
+                myFile = new File(lastFilePath);
+                PdfCopy copyMerge = new PdfCopy(merge, new FileOutputStream(myFile));
+                merge.open();
+                copyMerge.addDocument(make);
+                merge.close();
+                make.close();
+                newFile.delete();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -433,6 +595,7 @@ public class comments_item18 extends Activity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
     }
+
 
     /**
      * Demande à l'utilisateur ce qu'il veut faire après avoir enregistré la cartographie, en lui donnant trois choix : continuer la MFM, prévisualiser le PDF ou quitter l'application.
@@ -475,6 +638,7 @@ public class comments_item18 extends Activity {
                         }
                     }
                 });
+        progressbar.setVisibility(View.GONE);
         builder.show();
     }
 }

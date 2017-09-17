@@ -35,7 +35,6 @@
         android:textAlignment="center"
         android:textSize="25sp" />
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -245,10 +244,10 @@
                 android:textStyle="bold" />
 
             <CheckBox
-                android:id="@+id/checkBoxPoseSans"
+                android:id="@+id/checkBoxPause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/pose"
+                android:text="@string/pause"
                 android:textColor="#7e8183"
                 android:textSize="25sp"
                 android:textStyle="bold" />
@@ -262,19 +261,19 @@
             android:orientation="vertical">
 
             <CheckBox
-                android:id="@+id/checkBoxGlisse"
+                android:id="@+id/checkBoxChange"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/glisse"
+                android:text="@string/change"
                 android:textColor="#7e8183"
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
             <CheckBox
-                android:id="@+id/checkBoxChange"
+                android:id="@+id/checkBoxCompens"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/change"
+                android:text="@string/compensationTronc"
                 android:textColor="#7e8183"
                 android:textSize="25sp"
                 android:textStyle="bold" />
@@ -294,9 +293,10 @@
         android:inputType="text"
         android:lines="4"
         android:maxLength="200"
-        android:hint="@string/commentaire_libre"
         android:scrollbars="horizontal"
+        android:hint="@string/commentaire_libre"
         tools:ignore="LabelFor,TextFields" />
+
 
     <Button
         android:id="@+id/buttonSave"
@@ -320,4 +320,15 @@
         android:textSize="30sp"
         tools:text="Infos état enregistrement" />
 
+    <ProgressBar
+        android:id="@+id/enregistBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:progress="20"
+        android:indeterminate="true"
+        android:visibility="gone"
+        android:indeterminateDrawable="@drawable/progress"/>
 </LinearLayout>

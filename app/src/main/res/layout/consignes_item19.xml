@@ -23,7 +23,7 @@
     </LinearLayout>
 
     <ImageView
-        android:contentDescription="@string/CDimage"
+        android:contentDescription="@string/item19image"
         android:layout_width="45.2mm"
         android:layout_height="52.9mm"
         android:layout_centerInParent="true"
