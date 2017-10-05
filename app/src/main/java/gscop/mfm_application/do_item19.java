@@ -143,7 +143,7 @@ public class do_item19 extends Activity {
                 else{
                     dessin.getBooleanClick(false);
                     state.setText(R.string.enCours);
-                    move_CD.setBackgroundResource(R.drawable.movecd_bord);
+                    move_CD.setBackgroundResource(R.drawable.moverect_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check);
                     click_first = false;
                 }
