@@ -303,7 +303,7 @@ public class comments_item19 extends Activity {
     }
 
     private void saveSQL(){
-        boolean first = true;
+        boolean first = false;
         Log.d(TAG, " SAVE SQL ");
         DbHelper dbHelper = new DbHelper(this);
         Patient patient = new Patient(0,name,surname,birthdate);
@@ -313,7 +313,7 @@ public class comments_item19 extends Activity {
             Log.d(TAG, p.toString());
             Log.d(TAG, " ID : " + p.getId());
             if(p == patient){
-                first = false;
+                first = true;
             }
         }
         if(first){
