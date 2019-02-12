@@ -15,6 +15,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Alison.rl on 30/07/2017.
@@ -49,6 +50,14 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     private HashMap<Integer,Long> animLastUpdated = new HashMap<>();
 
 
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+
+    private int myi=0;
+    private long lasttemp;
+
+
     public Dessin_carto18(Context context) {
         super(context);
         init();
@@ -81,6 +90,9 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        // pour la nouvelle animation
+        myi=0;
+
         for(int j = 0; j < completedTabsX.size(); j++ ){
             animRunning.put(j,false);
             animPathsMeasure.put(j,null);
@@ -89,7 +101,9 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             durationTimes.add(eventUpTimes.get(j) - eventDownTimes.get(j));
             Log.d(TAG," DURATION : " + j + durationTimes.get(j));
         }
+
         startAnimation();
+
     }
 
     public void startAnimation(){
@@ -100,10 +114,13 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
     }
 
     public void setPaths(){
+
         Log.d(TAG, " NUMBERS OF PATHS : " + completedTabsX.size());
         for(int j = 0; j < completedTabsX.size(); j++) {
             Log.d(TAG, " TABLEAU : " + completedTabsX.get(j).size());
             Path path = new Path();
+            int tamanho=completedTabsX.get(j).size();
+            Log.d(TAG, " Tamanho : "+tamanho);
             for (int i = 0; i < completedTabsX.get(j).size(); i++) {
                 Log.d(TAG, " I : " + i);
                 if (i == 0) {
@@ -115,15 +132,52 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             paths.add(path);
         }
         Log.d(TAG, " PATHS LOADED ! ");
+
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
 
-        canvas.drawBitmap(image,mImageX,mImageY,null);
+        canvas.drawBitmap(image,mImageX,mImageY-50,null);
+
+        if (my_X.size()!=0){
+            if (myi==0){
+                lasttemp=System.currentTimeMillis();
+                canvas.drawPoint(my_X.get(myi), my_Y.get(myi), paint);
+                paint.setColor(Color.MAGENTA);
+                myi=1;
+            } else if (myi<my_X.size() ){
+                long waittime=(my_times.get(myi)-my_times.get(myi-1))-(System.currentTimeMillis()-lasttemp);
+                if (waittime>0){
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(waittime*9/10); // adiantamos com base na observação do tempo do traçado
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+
+                    }
+                }
+                for (int toto=0; toto<=myi; toto++){
+                    canvas.drawPoint(my_X.get(toto), my_Y.get(toto), paint);
+                }
+                lasttemp=System.currentTimeMillis();
+                paint.setColor(Color.BLACK);
+                myi=myi+1;
+
+            } else {
+                animStop=true;
+                setPaths();
+                for(int j = 0; j < paths.size(); j++){
+                    paint.setColor(Color.BLACK);
+                    canvas.drawPath(paths.get(j),paint);
+                }
+            }
+
+        }
+
 
         if(animStop){
+/*
             if(paths.size() == 0 && completedTabsX.size() != 0) {
                 setPaths();
                 invalidate();
@@ -131,20 +185,21 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             else{
                 for(int j = 0; j < paths.size(); j++){
                     if(isPalm.get(j)){
-                        paint.setColor(Color.BLUE);
+                        paint.setColor(Color.BLACK);
                     }
                     else{
-                        paint.setColor(Color.RED);
+                        paint.setColor(Color.TRANSPARENT);
                     }
                     canvas.drawPath(paths.get(j),paint);
                 }
             }
+*/
         } else {
             for (int j = 0; j < paths.size(); j++) {
                 Log.d(TAG, " J : " + j);
                 isTime(j);
-                if (animRunning.get(j)) {drawAnim(canvas, j);}
-                else {drawStatic(canvas, j);}
+//                if (animRunning.get(j)) {drawAnim(canvas, j);}
+//                else {drawStatic(canvas, j);}
             }
             super.onDraw(canvas);
             invalidate();
@@ -172,7 +227,9 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
 
     public void drawAnim(Canvas canvas, int j){
 
+
         if(animPathsMeasure.get(j) == null){
+
             // Set the first point of the Path
             PathMeasure animPathMesure = new PathMeasure(paths.get(j),false);
             animPathMesure.nextContour();
@@ -190,6 +247,10 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
             long now = System.currentTimeMillis();
             long timeSinceLast = now - animLastUpdated.get(j);
             Log.d(TAG, " TIME SINCE LAST : " + timeSinceLast);
+
+            float toto = animPathsMeasure.get(j).getLength();
+            Log.d(TAG, " toto= " + toto);
+
 
             float animLength = (animPathsMeasure.get(j).getLength()*(timeSinceLast))/durationTimes.get(j);
             float newPos =  animCurrentPos.get(j) + animLength;
@@ -219,19 +280,22 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
 
             // Draw Path
             if(isPalm.get(j)){
-                paint.setColor(Color.BLUE);
+                paint.setColor(Color.BLACK);
             }
             else{
-                paint.setColor(Color.RED);
+//                paint.setColor(Color.TRANSPARENT);
             }
             canvas.drawPath(animPaths.get(j),paint);
         }
+
+
+
     }
 
     public void drawStatic(Canvas canvas, int j){
         if(animPathsMeasure.get(j) != null){
             if(isPalm.get(j)){
-                paint.setColor(Color.BLUE);
+                paint.setColor(Color.BLACK);
             }
             else{
                 paint.setColor(Color.RED);
@@ -261,6 +325,14 @@ public class Dessin_carto18 extends View implements View.OnClickListener {
 
     public void getEventDownTimes(ArrayList<Long> event_times) {
         eventDownTimes = event_times;
+    }
+
+    public void getmy_times(ArrayList<Long> my_timesx) { my_times = my_timesx; }
+    public void getmy_X(ArrayList<Float> my_Xx) {
+        my_X= my_Xx;
+    }
+    public void getmy_Y(ArrayList<Float> my_Yx) {
+        my_Y= my_Yx;
     }
 
     public void getCdPosition(Float x, Float y){

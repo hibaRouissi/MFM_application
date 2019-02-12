@@ -29,7 +29,18 @@ public class consignes_item18 extends Activity {
             birthdate = intent.getStringExtra("birthdate");
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
         }
+        //Inserted by Adriana 04/03/2018
+        Intent myIntent2 = new Intent(consignes_item18.this, do_item18.class);
+        myIntent2.putExtra("name", name);
+        myIntent2.putExtra("surname", surname);
+        myIntent2.putExtra("birthdate", birthdate);
+        myIntent2.putExtra("varRandom", varRandom);
+        startActivity(myIntent2);
+        // On ferme l'activité en cours
+        finish();
 
+        //Original to call CONSIGNES 04/03/2018
+        /*
         // Pour le bouton "Démarrer"
         boutonDemarrer = (Button) findViewById(R.id.boutonDemarrer);
         boutonDemarrer.setOnClickListener(new View.OnClickListener() {
@@ -45,6 +56,7 @@ public class consignes_item18 extends Activity {
                 finish();
             }
         });
+        */
     }
 
     private boolean back_answer = false;

@@ -53,8 +53,7 @@ public class Patient {
 
     @Override
     public String toString() {
-        return " Nom = " + name +
-                "          Prénom = " + surname +
+        return " Identifiant = " + name +
                 "          Date de Naissance = " + birthdate ;
     }
 }

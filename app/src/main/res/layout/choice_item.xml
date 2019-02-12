@@ -34,12 +34,22 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="10dp"
         android:text="@string/choiceExercise"
         android:textAlignment="center"
         android:textColor="#0d8dc9"
         android:textSize="40sp"
         android:textStyle="bold" />
+
+    <TextView
+            android:id="@+id/random_choice"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:textColor="#ff0000"
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"

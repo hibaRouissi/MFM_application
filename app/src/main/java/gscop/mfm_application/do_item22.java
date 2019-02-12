@@ -46,6 +46,17 @@ public class do_item22 extends Activity {
     private ArrayList isPalm;
     private Float mImageX,mImageY;
     private Long durationTime;
+    // inserted on 28/02
+    private ArrayList xDownList;
+    private ArrayList yDownList;
+
+    //Inserted by Adriana 06/03/2018 (To operate the EFFACER button)
+    private Button boutonEffacer;
+
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +69,8 @@ public class do_item22 extends Activity {
         //------------------------------------------------------------------
 
         dessin = (Dessin_item22) findViewById(R.id.drawingItem22);
-        state = (TextView) findViewById(R.id.enCours);
+        //Commented by Adriana 06/03/2018
+        //state = (TextView) findViewById(R.id.enCours);
 
         // On récupère les infos de l'intent de l'activité précédente
         Intent intent = getIntent();
@@ -68,6 +80,25 @@ public class do_item22 extends Activity {
             birthdate = intent.getStringExtra("birthdate");
             varRandom = intent.getIntExtra("varRandom",-1); // -1 par défaut
         }
+
+        //Inserted by Adriana 06/03/2018 (To operate the EFFACER button)
+        // Pour le bouton "EFFACER"
+        boutonEffacer = (Button) findViewById(R.id.buttonerase);
+        boutonEffacer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(do_item22.this, do_item22.class);
+                myIntent.putExtra("name", name);
+                myIntent.putExtra("surname", surname);
+                myIntent.putExtra("birthdate", birthdate);
+                myIntent.putExtra("varRandom", 1);
+                startActivity(myIntent);
+                // On ferme l'activité en cours
+                finish();
+
+                //dessin.cleancompletedPath();
+            }
+        });
 
         // Pour le bouton "Stop"
         boutonTerminer = (Button) findViewById(R.id.buttonStop);
@@ -82,10 +113,11 @@ public class do_item22 extends Activity {
                 else {
                     boutonTerminer.setClickable(false);
                     // Action quand on appuie sur terminer -> affiche la cartographie
-                    state.setText(R.string.saving);
+                    //Commented by Adriana 06/03/2018
+                    // state.setText(R.string.saving);
                     dessin.getPaint().setColor(Color.BLUE);
                     dessin.draw(dessin.getCanvas());
-                    Intent myIntent = new Intent(do_item22.this, carto_item22.class);
+                    Intent myIntent = new Intent(do_item22.this, comments_item22.class);
                     myIntent.putExtra("name", name);
                     myIntent.putExtra("surname", surname);
                     myIntent.putExtra("birthdate", birthdate);
@@ -100,6 +132,40 @@ public class do_item22 extends Activity {
                     mImageY = dessin.getQY();
                     isPalm = dessin.getBooleanPalm();
                     durationTime = dessin.getDurationTime();
+                    // inserted on 28/02
+                    xDownList=dessin.getxDownList();
+                    yDownList=dessin.getyDownList();
+
+                    boolean test1       = dessin.gettest1() ;
+                    boolean test2       = dessin.gettest2() ;
+                    boolean digitou_1   = dessin.getdigitou_1();
+                    boolean digitou_2   = dessin.getdigitou_2();
+                    boolean digitou_3   = dessin.getdigitou_3();
+                    boolean digitou_4   = dessin.getdigitou_4();
+                    boolean digitou_5   = dessin.getdigitou_5();
+                    boolean digitou_6   = dessin.getdigitou_6();
+                    boolean digitou_7   = dessin.getdigitou_7();
+                    boolean digitou_8   = dessin.getdigitou_8();
+                    boolean digitou_9   = dessin.getdigitou_9();
+                    boolean digitou_10  = dessin.getdigitou_10(); // out of design
+
+                    boolean cruzou_1    = dessin.getcruzou_1();
+                    boolean cruzou_2    = dessin.getcruzou_2();
+                    boolean cruzou_3    = dessin.getcruzou_3();
+                    boolean cruzou_4    = dessin.getcruzou_4();
+                    boolean cruzou_5    = dessin.getcruzou_5();
+                    boolean cruzou_6    = dessin.getcruzou_6();
+                    boolean cruzou_7    = dessin.getcruzou_7();
+                    boolean cruzou_8    = dessin.getcruzou_8();
+                    boolean cruzou_9    = dessin.getcruzou_9();
+                    boolean cruzou_10   = dessin.getcruzou_10(); // out of design
+
+                    // itens do nova animação;
+                    my_times=dessin.getmy_times();
+                    my_X=dessin.getmy_X();
+                    my_Y=dessin.getmy_Y();
+
+
                     myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
                     myIntent.putExtra("tableauX", tableauX);
                     myIntent.putExtra("tableauY", tableauY);
@@ -109,6 +175,38 @@ public class do_item22 extends Activity {
                     myIntent.putExtra("mImageY",mImageY);
                     myIntent.putExtra("isPalm",isPalm);
                     myIntent.putExtra("durationTime",durationTime);
+                    // inserted on 28/02
+                    myIntent.putExtra("xDownList", xDownList);
+                    myIntent.putExtra("yDownList", yDownList);
+
+                    myIntent.putExtra("test1",test1);
+                    myIntent.putExtra("test2",test2);
+                    myIntent.putExtra("digitou_1",digitou_1);
+                    myIntent.putExtra("digitou_2",digitou_2);
+                    myIntent.putExtra("digitou_3",digitou_3);
+                    myIntent.putExtra("digitou_4",digitou_4);
+                    myIntent.putExtra("digitou_5",digitou_5);
+                    myIntent.putExtra("digitou_6",digitou_6);
+                    myIntent.putExtra("digitou_7",digitou_7);
+                    myIntent.putExtra("digitou_8",digitou_8);
+                    myIntent.putExtra("digitou_9",digitou_9);
+                    myIntent.putExtra("digitou_10",digitou_10);
+                    myIntent.putExtra("cruzou_1",cruzou_1);
+                    myIntent.putExtra("cruzou_2",cruzou_2);
+                    myIntent.putExtra("cruzou_3",cruzou_3);
+                    myIntent.putExtra("cruzou_4",cruzou_4);
+                    myIntent.putExtra("cruzou_5",cruzou_5);
+                    myIntent.putExtra("cruzou_6",cruzou_6);
+                    myIntent.putExtra("cruzou_7",cruzou_7);
+                    myIntent.putExtra("cruzou_8",cruzou_8);
+                    myIntent.putExtra("cruzou_9",cruzou_9);
+                    myIntent.putExtra("cruzou_10",cruzou_10);
+                    myIntent.putExtra("test_line_ok",dessin.get_test_line_ok());
+
+                    myIntent.putExtra("my_times",my_times);
+                    myIntent.putExtra("my_X",my_X);
+                    myIntent.putExtra("my_Y",my_Y);
+
                     startActivity(myIntent);
                     // On ferme l'activité en cours
                     finish();
@@ -122,7 +220,8 @@ public class do_item22 extends Activity {
             public void onClick(View v){
                 if(click_first == false){
                     dessin.getBooleanClick(true);
-                    state.setText(R.string.movequad);
+                    //Commented by Adriana 06/03/2018
+                    // state.setText(R.string.movequad);
                     // Pour changer l'image background du bouton
                     move_quad.setBackgroundResource(R.drawable.dismovequad_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check_block);
@@ -134,7 +233,7 @@ public class do_item22 extends Activity {
                 }
                 else{
                     dessin.getBooleanClick(false);
-                    state.setText(R.string.enCours);
+                    //state.setText(R.string.enCours);
                     move_quad.setBackgroundResource(R.drawable.movequad_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check);
                     click_first = false;
@@ -146,32 +245,6 @@ public class do_item22 extends Activity {
     private boolean back_answer = false;
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Êtes-vous certain de vouloir quitter l'exercice ?\n(le tracé sera perdu)")
-                    .setCancelable(false)
-                    .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            back_answer = true;
-                            // On revient à l'écran des consignes de l'item 18
-                            Intent myIntent = new Intent(do_item22.this, consignes_item22.class);
-                            myIntent.putExtra("name", name);
-                            myIntent.putExtra("surname", surname);
-                            myIntent.putExtra("birthdate", birthdate);
-                            myIntent.putExtra("varRandom",varRandom);
-                            startActivity(myIntent);
-                            // On ferme l'activité en cours
-                            finish();
-                        }
-                    })
-                    .setNegativeButton("Non", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            back_answer = false;
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
         return back_answer;
     }
 
@@ -221,4 +294,3 @@ public class do_item22 extends Activity {
     }
 
 }
-

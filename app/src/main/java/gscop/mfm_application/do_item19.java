@@ -52,7 +52,17 @@ public class do_item19 extends Activity {
     private ArrayList eventDownTimes;
     private ArrayList isPalm;
     private float mImageX,mImageY;
+    //insered by Adriana 25_02_18 (enregistrer le dessin en pdf)
+    private float mImage2X,mImage2Y;
     private Long durationTime;
+    // //Inserted by Adriana 06/03/2018 (To operate the EFFACER button)
+    private Button boutonEffacer;
+
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+    private boolean test_velocity;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +71,13 @@ public class do_item19 extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.do_item19);
 
-        // Permet de cacher la barre de notifications et bloquer l'expansion
+          // Permet de cacher la barre de notifications et bloquer l'expansion
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         //------------------------------------------------------------------
 
         dessin = (Dessin_item19) findViewById(R.id.drawingItem19);
-        state = (TextView) findViewById(R.id.enCours);
+        //Commented by Adriana 06/03/2018
+        // state = (TextView) findViewById(R.id.enCours);
 
         // On récupère les infos de l'intent de l'activité précédente
         Intent intent = getIntent();
@@ -76,6 +87,24 @@ public class do_item19 extends Activity {
             birthdate = intent.getStringExtra("birthdate");
             varRandom = intent.getIntExtra("varRandom",-1); // -1 par défaut
         }
+
+        // //Inserted by Adriana 06/03/2018 (To operate the EFFACER button)
+        // Pour le bouton "EFFACER"
+        boutonEffacer = (Button) findViewById(R.id.buttonerase);
+        boutonEffacer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(do_item19.this, do_item19.class);
+                myIntent.putExtra("name", name);
+                myIntent.putExtra("surname", surname);
+                myIntent.putExtra("birthdate", birthdate);
+                myIntent.putExtra("varRandom", 1);
+                startActivity(myIntent);
+                // On ferme l'activité en cours
+                finish();
+                // dessin.cleancompletedPath();
+            }
+        });
 
         // Pour le bouton "Stop"
         boutonTerminer = (Button) findViewById(R.id.buttonStop);
@@ -90,10 +119,10 @@ public class do_item19 extends Activity {
                 else {
                     boutonTerminer.setClickable(false);
                     // Action quand on appuie sur terminer -> affiche la cartographie
-                    state.setText(R.string.saving);
+                    // state.setText(R.string.saving);
                     dessin.getPaint().setColor(Color.BLUE);
                     dessin.draw(dessin.getCanvas());
-                    Intent myIntent = new Intent(do_item19.this, carto_item19.class);
+                    Intent myIntent = new Intent(do_item19.this, comments_item19.class);
                     myIntent.putExtra("name", name);
                     myIntent.putExtra("surname", surname);
                     myIntent.putExtra("birthdate", birthdate);
@@ -106,8 +135,16 @@ public class do_item19 extends Activity {
                     eventUpTimes = dessin.getEventUpTimes();
                     mImageX = dessin.getImageX();
                     mImageY = dessin.getImageY();
+                    //insered by Adriana 25_02_18 (pour enregistrer le dessin en pdf)
+                    mImage2X = dessin.getImage2X();
+                    mImage2Y = dessin.getImage2Y();
                     isPalm = dessin.getBooleanPalm();
                     durationTime = dessin.getDurationTime();
+                    // itens do nova animação;
+                    my_times=dessin.getmy_times();
+                    my_X=dessin.getmy_X();
+                    my_Y=dessin.getmy_Y();
+                    test_velocity=dessin.get_test_velocity();
                     myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
                     myIntent.putExtra("tableauX", tableauX);
                     myIntent.putExtra("tableauY", tableauY);
@@ -115,8 +152,33 @@ public class do_item19 extends Activity {
                     myIntent.putExtra("eventDownTimes", eventDownTimes);
                     myIntent.putExtra("mImageX",mImageX);
                     myIntent.putExtra("mImageY",mImageY);
+                    //insered by Adriana 25_02_18 (pour enregistrer le dessin en pdf)
+                    myIntent.putExtra("mImage2X",mImage2X);
+                    myIntent.putExtra("mImage2Y",mImage2Y);
                     myIntent.putExtra("isPalm",isPalm);
                     myIntent.putExtra("durationTime",durationTime);
+
+                    myIntent.putExtra("touched_inside",dessin.get_touched_inside());
+                    myIntent.putExtra("demi_boucles",dessin.get_demi_boucles());
+                    myIntent.putExtra("max_within_range",dessin.get_max_within_range());
+                    myIntent.putExtra("min_within_range",dessin.get_min_within_range());
+                    myIntent.putExtra("max_outside_window",dessin.get_max_outside_window());
+                    myIntent.putExtra("min_outside_window",dessin.get_min_outside_window());
+                    myIntent.putExtra("min_outside_window",dessin.get_min_outside_window());
+                    myIntent.putExtra("max_x",dessin.get_max_x());
+                    myIntent.putExtra("min_x",dessin.get_min_x());
+                    myIntent.putExtra("cotation_3",dessin.get_cotation_3());
+                    myIntent.putExtra("last_touch_ok",dessin.get_last_touch_ok());
+                    myIntent.putExtra("first_touch_ok",dessin.get_first_touch_ok());
+                    myIntent.putExtra("firsttouch_in_tray",dessin.get_firsttouch_in_tray());
+                    myIntent.putExtra("lasttouch_in_tray",dessin.get_lasttouch_in_tray());
+                    myIntent.putExtra("my_times",my_times);
+                    myIntent.putExtra("my_X",my_X);
+                    myIntent.putExtra("my_Y",my_Y);
+                    myIntent.putExtra("test_velocity",test_velocity);
+                    myIntent.putExtra("missed_turns",dessin.get_missed_turns());
+                    myIntent.putExtra("number_of_traces",dessin.get_number_of_traces());
+
                     startActivity(myIntent);
                     // On ferme l'activité en cours
                     finish();
@@ -130,19 +192,19 @@ public class do_item19 extends Activity {
             public void onClick(View v){
                 if(click_first == false){
                     dessin.getBooleanClick(true);
-                    state.setText(R.string.moverect);
+                    //state.setText(R.string.moverect);
                     // Pour changer l'image background du bouton
                     move_CD.setBackgroundResource(R.drawable.dismoverect_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check_block);
                     // Pour afficher une avis
                     click_first = true;
-                    Toast toast = Toast.makeText(context,R.string.toast_movecd,Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(context,R.string.toast_movequads,Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP, 0, 0);
                     toast.show();
                 }
                 else{
                     dessin.getBooleanClick(false);
-                    state.setText(R.string.enCours);
+                    //state.setText(R.string.enCours);
                     move_CD.setBackgroundResource(R.drawable.moverect_bord);
                     boutonTerminer.setBackgroundResource(R.drawable.check);
                     click_first = false;
@@ -154,32 +216,6 @@ public class do_item19 extends Activity {
     private boolean back_answer = false;
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Êtes-vous certain de vouloir quitter l'exercice ?\n(le tracé sera perdu)")
-                    .setCancelable(false)
-                    .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            back_answer = true;
-                            // On revient à l'écran des consignes de l'item 19
-                            Intent myIntent = new Intent(do_item19.this, consignes_item19.class);
-                            myIntent.putExtra("name", name);
-                            myIntent.putExtra("surname", surname);
-                            myIntent.putExtra("birthdate", birthdate);
-                            myIntent.putExtra("varRandom",varRandom);
-                            startActivity(myIntent);
-                            // On ferme l'activité en cours
-                            finish();
-                        }
-                    })
-                    .setNegativeButton("Non", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            back_answer = false;
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
         return back_answer;
     }
 

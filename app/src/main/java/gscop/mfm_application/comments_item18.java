@@ -3,6 +3,7 @@ package gscop.mfm_application;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -20,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -63,35 +65,44 @@ import java.util.Locale;
 
 public class comments_item18 extends Activity {
 
+    private boolean visibility_cotation_automatique=true; // digite false no lugar de true para apagar a cot. autom.
+
     private static final String TAG = "www.gscop.app" ;
     private String name = "";
     private String surname = "";
     private String birthdate = "";
     private Button boutonEnregistrer;
     private final Context context = this;
-    private RadioGroup radioGroupCotationPaper;
-    private TextView textCotationPaper;
-    private RadioButton boutonCotation0Paper;
-    private RadioButton boutonCotation1Paper;
-    private RadioButton boutonCotation2Paper;
-    private RadioButton boutonCotation3Paper;
-    private RadioButton boutonCotationNSPPaper;
+    private RadioGroup radioGroupCotationautomatique;
+    private RadioButton boutonCotation0automatique;
+    private RadioButton boutonCotation1automatique;
+    private RadioButton boutonCotation2automatique;
+    private RadioButton boutonCotation3automatique;
     private RadioGroup radioGroupCotationTablet;
     private TextView textCotationTablet;
     private RadioButton boutonCotation0Tablet;
     private RadioButton boutonCotation1Tablet;
     private RadioButton boutonCotation2Tablet;
     private RadioButton boutonCotation3Tablet;
-    private RadioButton boutonCotationNSPTablet;
+
+    private TextView compcot;
+    private RadioButton buttoncomp_oui;
+    private RadioButton buttoncomp_non;
+
+
     private String cotationPaper = "cotation papier inconnue";
     private String cotationTablet = "cotation tablette inconnue";
     private String commentaire = "aucun commentaire";
+    private String commentaireJust = "aucun commentaire";
     private EditText comments;
+    private EditText commentsJust;
+    private EditText commencompcotation;
     private CheckBox checkBoxAppuiPaume;
     private CheckBox checkBoxPause;
     private CheckBox checkBoxChange;
     private CheckBox checkBoxCompens;
     private TextView infosPatient;
+    private TextView infotellwaytext;
     private String path = "";
     private ArrayList<ArrayList<Float>> tableauX;
     private ArrayList<ArrayList<Float>> tableauY;
@@ -108,6 +119,32 @@ public class comments_item18 extends Activity {
     private ArrayList isPalm;
     private ProgressBar progressbar;
     Boolean bmergePdf = false;
+    private int tellway;
+
+    private Button buttonExit;
+    private Button boutonRecommencer;
+    private Button boutonValider;
+    private ImageView carto;
+    private  Button buttonDessin_18;
+
+    // variáveis de cotação automática
+    private boolean test1;
+    private boolean test2;
+    private boolean test3;
+    private boolean test4;
+    private boolean test5;
+    private boolean test6;
+    private boolean test7;
+    private boolean test_incomplet;
+    private int resultat_cotation_automatique;
+
+    private int resultat_cotation_therapeute;
+
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+
+
 
     // Pdf folder
     File pdfFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -121,7 +158,8 @@ public class comments_item18 extends Activity {
     private int docsCount = 1;
     private boolean lastPdf = false;
 
-
+    public comments_item18() {
+    }
 
 
     @Override
@@ -145,7 +183,35 @@ public class comments_item18 extends Activity {
             mImageY = intent.getFloatExtra("mImageY",0f);
             isPalm = (ArrayList) intent.getSerializableExtra("isPalm");
             durationTime = intent.getLongExtra("durationTime",0);
-            varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
+            varRandom = intent.getIntExtra("varRandom", -1);
+            tellway= intent.getIntExtra("Gomes", 0);// -1 par défaut
+            name = intent.getStringExtra("name");
+            surname = intent.getStringExtra("surname");
+            birthdate = intent.getStringExtra("birthdate");
+            path = intent.getStringExtra("path");
+            eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
+            eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
+            mImageX = intent.getFloatExtra("mImageX", 0f);
+            mImageY = intent.getFloatExtra("mImageY", 0f);
+            isPalm = (ArrayList) intent.getSerializableExtra("isPalm");
+            tellway=intent.getIntExtra("adriana",0);
+            durationTime = intent.getLongExtra("durationTime", 0);
+            resultat_cotation_therapeute=intent.getIntExtra("resultat_cotation_therapeute",4);
+
+            my_times=(ArrayList) intent.getSerializableExtra("my_times");
+            my_X=(ArrayList) intent.getSerializableExtra("my_X");
+            my_Y=(ArrayList) intent.getSerializableExtra("my_Y");
+
+            // itens da cotação automática
+            test1 = intent.getBooleanExtra("test1",false);
+            test2 = intent.getBooleanExtra("test2",false);
+            test3 = intent.getBooleanExtra("test3",false);
+            test4 = intent.getBooleanExtra("test4",false);
+            test5 = intent.getBooleanExtra("test5",false);
+            test6 = intent.getBooleanExtra("test6",false);
+            test7 = intent.getBooleanExtra("test7",false);
+            test_incomplet= intent.getBooleanExtra("test_incomplet",false);
+
             try {
                 File f = new File(path, "cartographie.png");
                 cartoBitmap = BitmapFactory.decodeStream(new FileInputStream(f));
@@ -153,14 +219,11 @@ public class comments_item18 extends Activity {
                 e.printStackTrace();
                 Toast.makeText(getApplicationContext(), R.string.errorCarto, Toast.LENGTH_LONG).show();
             }
-            checkBoxAppuiPaume = (CheckBox) findViewById(R.id.checkBoxAppuiPaume);
-            checkBoxPause = (CheckBox) findViewById(R.id.checkBoxPause);
-            checkBoxChange = (CheckBox) findViewById(R.id.checkBoxChange);
-            checkBoxCompens = (CheckBox) findViewById(R.id.checkBoxCompens);
+
         }
 
         pdfFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                , "patient_" + name + "_" + surname);
+                , "patient_" + name );
 
         radioGroupCotationTablet = (RadioGroup) findViewById(R.id.radioGroupCotationTablet);
         textCotationTablet = (TextView) findViewById(R.id.textCotationTablet);
@@ -168,15 +231,104 @@ public class comments_item18 extends Activity {
         boutonCotation1Tablet = (RadioButton) findViewById(R.id.radioButton1Tablet);
         boutonCotation2Tablet = (RadioButton) findViewById(R.id.radioButton2Tablet);
         boutonCotation3Tablet = (RadioButton) findViewById(R.id.radioButton3Tablet);
-        boutonCotationNSPTablet = (RadioButton) findViewById(R.id.radioButtonNSPTablet);
 
-        radioGroupCotationPaper = (RadioGroup) findViewById(R.id.radioGroupCotationPaper);
-        textCotationPaper = (TextView) findViewById(R.id.textCotationPaper);
-        boutonCotation0Paper = (RadioButton) findViewById(R.id.radioButton0Paper);
-        boutonCotation1Paper = (RadioButton) findViewById(R.id.radioButton1Paper);
-        boutonCotation2Paper = (RadioButton) findViewById(R.id.radioButton2Paper);
-        boutonCotation3Paper = (RadioButton) findViewById(R.id.radioButton3Paper);
-        boutonCotationNSPPaper = (RadioButton) findViewById(R.id.radioButtonNSPPaper);
+        if (resultat_cotation_therapeute>=0 && resultat_cotation_therapeute<=3) {
+            if (resultat_cotation_therapeute==0) boutonCotation0Tablet.setChecked(true);
+            if (resultat_cotation_therapeute==1) boutonCotation1Tablet.setChecked(true);
+            if (resultat_cotation_therapeute==2) boutonCotation2Tablet.setChecked(true);
+            if (resultat_cotation_therapeute==3) boutonCotation3Tablet.setChecked(true);
+        }
+
+        // para a cotação automática
+        radioGroupCotationautomatique   = (RadioGroup)  findViewById(R.id.radioGroupCotationTabletAutomatique);
+        boutonCotation0automatique      = (RadioButton) findViewById(R.id.radioButtonCotationAutomatiquet0);
+        boutonCotation1automatique      = (RadioButton) findViewById(R.id.radioButtonCotationAutomatiquet1);
+        boutonCotation2automatique      = (RadioButton) findViewById(R.id.radioButtonCotationAutomatiquet2);
+        boutonCotation3automatique      = (RadioButton) findViewById(R.id.radioButtonCotationAutomatiquet3);
+
+
+//        private boolean test1 =false ; // se o primeiro toque é dentro do circulo central;
+//        private boolean test2 =false ; // se fez círculo menor em 1 traço sem parada
+//        private boolean test3 =false ; // se fez círculo menor em 1 traço com parada
+//        private boolean test4 =false ; // se fez círculo menor em 2 traços (com/sem parada, não verif)
+//        private boolean test5 =false ; // se fez círculo maior em 1 traço e sem parada
+//        private boolean test6 =false ; // se fez círculo maior em 1 traço com parada
+//        private boolean test7 =false ; // se fez círculo maior em 2 traços (com/sem parada, não verif)
+
+        infotellwaytext = (TextView) findViewById(R.id.tellwaytext);
+
+        if (!test1) {
+            boutonCotation0automatique.setChecked(true);
+            infotellwaytext.setText("La première touche n´as pas été au centre, ou il n´y a pas eu des touches");
+            resultat_cotation_automatique=0;
+        } else {
+            if (test5) {
+                boutonCotation3automatique.setChecked(true);
+                infotellwaytext.setText("Grand cercle ok dans une seule tracée et sans arrêt");
+                resultat_cotation_automatique=3;
+            } else if (test6 || test7) {
+                boutonCotation2automatique.setChecked(true);
+                if (test6){
+                    infotellwaytext.setText("Grand cercle ok, mais avec arrêt");
+                } else {
+                    infotellwaytext.setText("Grand cercle ok, mais avec plusieurs tracées");
+                }
+                resultat_cotation_automatique=2;
+            } else if (test2 || test3 || test4){
+                boutonCotation1automatique.setChecked(true);
+                if (test2){
+                    infotellwaytext.setText("Petit cercle ok dans une seule tracée"); // et sans arret
+                } else if (test3) {
+                    infotellwaytext.setText("Petit cercle ok"); // mais avec arret
+                } else {
+                    infotellwaytext.setText("Petit cercle ok avec plusieurs tracées");
+                }
+                resultat_cotation_automatique=1;
+            } else {
+                boutonCotation0automatique.setChecked(true);
+                resultat_cotation_automatique=0;
+                if (!test_incomplet){
+                    infotellwaytext.setText("Seulement le point au milieu a été consideré");
+                } else {
+                    infotellwaytext.setText("Cercle incomplet");
+                }
+            }
+        }
+
+        if (!visibility_cotation_automatique) {
+            TextView titi = (TextView) findViewById(R.id.textCotationTablette);
+            titi.setVisibility(View.INVISIBLE);
+            TextView tata = (TextView) findViewById(R.id.myx);
+            tata.setVisibility(View.INVISIBLE);
+            infotellwaytext.setVisibility(View.INVISIBLE);
+            boutonCotation0automatique.setVisibility(View.INVISIBLE);
+            boutonCotation1automatique.setVisibility(View.INVISIBLE);
+            boutonCotation2automatique.setVisibility(View.INVISIBLE);
+            boutonCotation3automatique.setVisibility(View.INVISIBLE);
+        }
+
+        radioGroupCotationTablet.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+                View radioButton = radioGroupCotationTablet.findViewById(checkedId);
+                int index = radioGroupCotationTablet.indexOfChild(radioButton);
+
+                switch (index) {
+                    case 2: // first button
+                        commentsJust.setVisibility(View.VISIBLE);
+                        compcot.setVisibility(View.VISIBLE);
+                        break;
+                    default:
+                        commentsJust.setVisibility(View.INVISIBLE);
+                        compcot.setVisibility(View.INVISIBLE);
+                        break;
+                }
+            }
+        });
+
+
         textStateSaving = (TextView) findViewById(R.id.textStateSaving);
 
         comments = (EditText) findViewById(R.id.editTextComments);
@@ -189,9 +341,79 @@ public class comments_item18 extends Activity {
             }
         });
 
+        commentsJust = (EditText) findViewById(R.id.editTextJust);
+        commentsJust.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard(v);
+                }
+            }
+        });
+        commentsJust.setVisibility(View.INVISIBLE);
+
+        compcot = (TextView) findViewById(R.id.compcotation);
+        compcot.setVisibility(View.INVISIBLE);
+
         infosPatient = (TextView) findViewById(R.id.PatientName);
-        infosPatient.setText("Patient : " + name + " " + surname + " \nNé(e) le : " + birthdate);
+        infosPatient.setText("Patient : " + name + " \nNé(e) le : " + birthdate);
         progressbar = (ProgressBar) findViewById(R.id.enregistBar);
+
+        // Pour Le bouton " buttonDessin_18"
+        buttonDessin_18 = (Button) findViewById(R.id.buttonDessin_18);
+        buttonDessin_18.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!handledClick) {
+                    handledClick = true;
+                    buttonDessin_18.setClickable(false);
+                    buttonDessin_18.setBackgroundColor(Color.GRAY);
+                    Intent myIntent = new Intent(comments_item18.this, carto_item18.class);
+                    myIntent.putExtra("name", name);
+                    myIntent.putExtra("surname", surname);
+                    myIntent.putExtra("birthdate", birthdate);
+                    myIntent.putExtra("path", path);
+                    myIntent.putExtra("tableauX", tableauX);
+                    myIntent.putExtra("tableauY", tableauY);
+                    myIntent.putExtra("varRandom", varRandom);
+                    myIntent.putExtra("eventUpTimes", eventUpTimes);
+                    myIntent.putExtra("eventDownTimes", eventDownTimes);
+                    myIntent.putExtra("mImageX",mImageX);
+                    myIntent.putExtra("mImageY",mImageY);
+                    myIntent.putExtra("isPalm",isPalm);
+                    myIntent.putExtra("durationTime",durationTime);
+
+                    myIntent.putExtra("my_times",my_times);
+                    myIntent.putExtra("my_X",my_X);
+                    myIntent.putExtra("my_Y",my_Y);
+
+                    // myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
+                    myIntent.putExtra("test1", test1);
+                    myIntent.putExtra("test2", test2);
+                    myIntent.putExtra("test3", test3);
+                    myIntent.putExtra("test4", test4);
+                    myIntent.putExtra("test5", test5);
+                    myIntent.putExtra("test6", test6);
+                    myIntent.putExtra("test7", test7);
+                    myIntent.putExtra("test_incomplet", test_incomplet);
+
+                    myIntent.putExtra("path", path);
+                    myIntent.putExtra("adriana",tellway);
+
+                    if (boutonCotation0Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",0);
+                    if (boutonCotation1Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",1);
+                    if (boutonCotation2Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",2);
+                    if (boutonCotation3Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",3);
+
+                    startActivity(myIntent);
+
+                    // On ferme l'activité en cours
+                    finish();
+                }
+            }
+
+        });
+
 
         // Pour le bouton "Enregistrer"
         boutonEnregistrer = (Button) findViewById(R.id.buttonSave);
@@ -241,45 +463,63 @@ public class comments_item18 extends Activity {
             else{
                 textStateSaving.setText(R.string.savedOK);
                 saveSQL();
-                promptForNextAction();
+
+                // Commented by Adriana 05/03/2018 (to remove the call:"que voulez-vous faires"
+                //promptForNextAction();
+
+                //inserted by Adriana 05/03/2018
+                Intent myIntent = new Intent(comments_item18.this, choice_item.class);
+                myIntent.putExtra("name", name);
+                myIntent.putExtra("surname", surname);
+                myIntent.putExtra("birthdate", birthdate);
+                myIntent.putExtra("varRandom", varRandom); // included in 12/03
+                startActivity(myIntent);
+                // on ferme l'activité en cours
+                finish();
             }
             progressbar.setVisibility(View.INVISIBLE);
         }
     }
 
-    private void preCreatePdf(){
+    private void preCreatePdf() {
         // On crée un dossier NOM_prenom du patient s'il n'existe pas déjà
         boolean isDirectoryCreated = pdfFolder.exists();
         if (!isDirectoryCreated) {
             isDirectoryCreated = pdfFolder.mkdir();
-            Log.d(TAG," Creating folder ");
+            Log.d(TAG, " Creating folder ");
         }
-        if(isDirectoryCreated){
-            Log.d(TAG," Folder created ");
+        if (isDirectoryCreated) {
+            Log.d(TAG, " Folder created ");
         }
 
 
         // See the last pdf created in the actual day
-        while(!lastPdf){
-            String filePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + docsCount + ".pdf";
+        while (!lastPdf) {
+            String filePath = pdfFolder.toString() + "/" + name + "_" + timeStampSimple + "_" + "item18" + "_" + docsCount + ".pdf";
             myFile = new File(filePath);
             boolean isFile = myFile.exists();
-            if(isFile){
+            if (isFile) {
                 Log.d(TAG, " File exist ");
                 docsCount++;
-            }
-            else{
-                Log.d(TAG, " Last pdf is : " + (docsCount-1));
+            } else {
+                Log.d(TAG, " Last pdf is : " + (docsCount - 1));
                 lastPdf = true;
             }
         }
 
-        if(docsCount == 1){
-            Log.d(TAG," First pdf of the day ");
+        if (docsCount == 1) {
+            Log.d(TAG, " First pdf of the day ");
             bmergePdf = false;
             actionEnregistrer();
+        } else {
+            // Inserted by Adriana 05/03/2018 ( To remove the choice to register in another PDF)
+            bmergePdf = true;
+            actionEnregistrer();
         }
-        else {
+    }
+
+    // Commented by Adriana 05/03/2018
+            /*
             // Make dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage("Est-ce que vous voulez enregistre dans le dernier pdf")
@@ -301,9 +541,10 @@ public class comments_item18 extends Activity {
             alert.show();
         }
     }
+    */
 
     private void saveSQL(){
-        boolean first = false;
+        boolean first = true;
         Log.d(TAG, " SAVE SQL ");
         DbHelper dbHelper = new DbHelper(this);
         Patient patient = new Patient(0,name,surname,birthdate);
@@ -313,7 +554,7 @@ public class comments_item18 extends Activity {
             Log.d(TAG, p.toString());
             Log.d(TAG, " ID : " + p.getId());
             if(p == patient){
-                first = true;
+                first = false;
             }
         }
         if(first){
@@ -326,59 +567,37 @@ public class comments_item18 extends Activity {
 
 
 
-    /**
-     * Donne les actions à réaliser lorsque l'utilisateur clique sur le bouton "Enregistrer"
-     */
     private void actionEnregistrer() {
         textStateSaving.setText("");
         // On vérifie qu'au moins un radioButton a été sélectionné dans chaque radioGroup
         // radioGroup : cotation papier
-        if (boutonCotation0Paper.isChecked() || boutonCotation1Paper.isChecked() || boutonCotation2Paper.isChecked() || boutonCotation3Paper.isChecked() || boutonCotationNSPPaper.isChecked()) {
-            textCotationPaper.setError(null);
-            // radioGroup : cotation tablette
-            if (boutonCotation0Tablet.isChecked() || boutonCotation1Tablet.isChecked() || boutonCotation2Tablet.isChecked() || boutonCotation3Tablet.isChecked() || boutonCotationNSPTablet.isChecked()) {
-                textCotationTablet.setError(null);
+
+        if (boutonCotation0Tablet.isChecked() || boutonCotation1Tablet.isChecked() || boutonCotation2Tablet.isChecked() || boutonCotation3Tablet.isChecked() ) {
+
+                 textCotationTablet.setError(null);
                 // --------------------- on récupère les commentaires du kiné -------------------
-                // ------- COTATION PAPIER
-                int radioButtonSelectedID = radioGroupCotationPaper.getCheckedRadioButtonId();
-                View radioButtonSelected = radioGroupCotationPaper.findViewById(radioButtonSelectedID);
-                int index = radioGroupCotationPaper.indexOfChild(radioButtonSelected);
-                RadioButton r = (RadioButton) radioGroupCotationPaper.getChildAt(index);
-                cotationPaper = r.getText().toString();
                 // ------- COTATION TABLETTE
-                radioButtonSelectedID = radioGroupCotationTablet.getCheckedRadioButtonId();
-                radioButtonSelected = radioGroupCotationTablet.findViewById(radioButtonSelectedID);
-                index = radioGroupCotationTablet.indexOfChild(radioButtonSelected);
-                r = (RadioButton) radioGroupCotationTablet.getChildAt(index);
+                int radioButtonSelectedID = radioGroupCotationTablet.getCheckedRadioButtonId();
+                View radioButtonSelected = radioGroupCotationTablet.findViewById(radioButtonSelectedID);
+                int index = radioGroupCotationTablet.indexOfChild(radioButtonSelected);
+                RadioButton r = (RadioButton) radioGroupCotationTablet.getChildAt(index);
                 cotationTablet = r.getText().toString();
+
                 // ------- COMMENTAIRES
-                if (checkBoxCompens.isChecked())
-                    listeComm = listeComm + checkBoxCompens.getText() + " \n ";
-                if (checkBoxChange.isChecked())
-                    listeComm = listeComm + checkBoxChange.getText() + " \n ";
-                if (checkBoxPause.isChecked())
-                    listeComm = listeComm + checkBoxChange.getText() + " \n ";
-                if (checkBoxAppuiPaume.isChecked())
-                    listeComm = listeComm + checkBoxAppuiPaume.getText() + " \n ";
                 commentaire = comments.getText().toString();
+                commentaireJust = commentsJust.getText().toString();
                 // ----------- CREATION DU PDF -------------
                 new createPdfTask().execute();
-            } else {
-                boutonEnregistrer.setBackgroundColor(getResources().getColor(R.color.myBlue));
-                boutonEnregistrer.setClickable(true);
-                textStateSaving.setText(R.string.errorCotationTablet);
-                textCotationTablet.setError("Choisir cotation !");
-                textCotationTablet.requestFocus();
-                handledClick = false;
-            }
+
         } else {
             boutonEnregistrer.setBackgroundColor(getResources().getColor(R.color.myBlue));
             boutonEnregistrer.setClickable(true);
-            textStateSaving.setText(R.string.errorCotationPaper);
-            textCotationPaper.setError("Choisir cotation !");
-            textCotationPaper.requestFocus();
+            textStateSaving.setText(R.string.errorCotationTablet);
+            textCotationTablet.setError("Choisir cotation !");
+            textCotationTablet.requestFocus();
             handledClick = false;
         }
+
     }
 
     // Quand on appuie sur la touche retour de la tablette
@@ -396,12 +615,36 @@ public class comments_item18 extends Activity {
             myIntent.putExtra("path", path);
             myIntent.putExtra("tableauX", tableauX);
             myIntent.putExtra("tableauY", tableauY);
+            myIntent.putExtra("varRandom", varRandom);
             myIntent.putExtra("eventUpTimes", eventUpTimes);
             myIntent.putExtra("eventDownTimes", eventDownTimes);
             myIntent.putExtra("mImageX",mImageX);
             myIntent.putExtra("mImageY",mImageY);
             myIntent.putExtra("isPalm",isPalm);
             myIntent.putExtra("durationTime",durationTime);
+
+            myIntent.putExtra("my_times",my_times);
+            myIntent.putExtra("my_X",my_X);
+            myIntent.putExtra("my_Y",my_Y);
+
+            // myIntent.putExtra("path", saveToInternalStorage(cartoBitmap));
+            myIntent.putExtra("test1", test1);
+            myIntent.putExtra("test2", test2);
+            myIntent.putExtra("test3", test3);
+            myIntent.putExtra("test4", test4);
+            myIntent.putExtra("test5", test5);
+            myIntent.putExtra("test6", test6);
+            myIntent.putExtra("test7", test7);
+            myIntent.putExtra("test_incomplet", test_incomplet);
+
+            myIntent.putExtra("path", path);
+            myIntent.putExtra("adriana",tellway);
+
+            if (boutonCotation0Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",0);
+            if (boutonCotation1Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",1);
+            if (boutonCotation2Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",2);
+            if (boutonCotation3Tablet.isChecked()) myIntent.putExtra("resultat_cotation_therapeute",3);
+
             startActivity(myIntent);
             // On ferme l'activité en cours
             finish();
@@ -427,7 +670,7 @@ public class comments_item18 extends Activity {
      */
     private void createPdf() throws FileNotFoundException, DocumentException {
 
-        String filePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + docsCount + ".pdf";
+        String filePath = pdfFolder.toString() + "/" + name + "_" + timeStampSimple + "_" + "item18" + "_" + docsCount + ".pdf";
         myFile = new File(filePath);
         OutputStream output = new FileOutputStream(myFile);
 
@@ -459,7 +702,7 @@ public class comments_item18 extends Activity {
         paragraphInfosTitre.add("\n\n INFORMATIONS PATIENT : \n");
         document.add(paragraphInfosTitre);
 
-        String strText = " Patient : " + name + " " + surname + "\n Date de naissance : " + birthdate + "\n \n";
+        String strText = " Patient : " + name + "\n Date de naissance : " + birthdate + "\n \n";
         Paragraph paragraphInfos = new Paragraph();
         paragraphInfos.add(strText);
         document.add(paragraphInfos);
@@ -470,10 +713,17 @@ public class comments_item18 extends Activity {
         paragraphInfosItemTitre.add("\n ITEM 18 :");
         document.add(paragraphInfosItemTitre);
 
-        strText = "réalisé le : " + timeStamp + "\n" + "cotation sur papier : " + cotationPaper + "\n" + "cotation sur tablette : " + cotationTablet + "\n \n";
+        strText = "réalisé le : " + timeStamp + "\n" + "cotation sur tablette : " + cotationTablet +"\n" + "cotation automatique : " + resultat_cotation_automatique + "\n";
+        strText = strText + infotellwaytext.getText().toString() + "\n \n";
+
+        if (boutonCotation2Tablet.isChecked()) {
+            strText = strText + "Justificatif de cotation 2: " + commentaireJust +  "\n";
+        }
+        strText = strText + "\n";
         Paragraph paragraphInfosItem = new Paragraph();
         paragraphInfosItem.add(strText);
         document.add(paragraphInfosItem);
+
 
         // COMMENTAIRES KINE
         Paragraph paragraphCommKineTitre = new Paragraph();
@@ -514,36 +764,44 @@ public class comments_item18 extends Activity {
         paragraphCarto.add(trueImage);
         document.add(paragraphCarto);
 
+
         // TABLEAU DES COORDONNEES
         //On change de page
-        document.newPage();
-        // 2 colonnes, une pour chaque tableau
-        Log.d(TAG," SIZE : " + tableauX.size());
-        for( int j = 0; j < tableauX.size(); j++) {
-            Paragraph paragraphTab = new Paragraph();
-            paragraphTab.setFont(myFontTitre);
-            paragraphTab.add("\n Tableau " + (j+1) + "\n");
-            document.add(paragraphTab);
-            document.add( Chunk.NEWLINE );
-            PdfPTable table = new PdfPTable(2);
-            table.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
-            // Titres : colonne 1 = coordonnées en X , colonne 2 = coordonnées en Y
-            table.addCell("Coordonnées en X");
-            table.addCell("Coordonnées en Y");
-            table.setHeaderRows(1);
-            // On met les cellules titre en gris
-            PdfPCell[] cells = table.getRow(0).getCells();
-            for (PdfPCell cell : cells) {
-                cell.setBackgroundColor(BaseColor.GRAY);
+        if (my_X.size()!=0) {
+            document.newPage();
+            // 2 colonnes, une pour chaque tableau
+            Log.d(TAG," SIZE : " + tableauX.size());
+            for( int j = 0; j < 1; j++) {
+                Paragraph paragraphTab = new Paragraph();
+                paragraphTab.setFont(myFontTitre);
+                paragraphTab.add("\n Tableau " + (j+1) + "\n");
+                document.add(paragraphTab);
+                document.add( Chunk.NEWLINE );
+                PdfPTable table = new PdfPTable(3);
+                table.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+                // Titres : colonne 1 = coordonnées en X , colonne 2 = coordonnées en Y
+                table.addCell("Coordonnées en X");
+                table.addCell("Coordonnées en Y");
+                table.addCell("Temps en millisecondes");
+
+                table.setHeaderRows(1);
+                // On met les cellules titre en gris
+                PdfPCell[] cells = table.getRow(0).getCells();
+                for (PdfPCell cell : cells) {
+                    cell.setBackgroundColor(BaseColor.GRAY);
+                }
+                // On parcourt les coordonnées en X et on les ajoute en colonne 1
+                long timezero= my_times.get(0);
+                for (int k = 0; k < my_X.size(); k++) {
+                    table.addCell(my_X.get(k).toString());
+                    table.addCell(my_Y.get(k).toString());
+                    Long timedif=my_times.get(k)-timezero;
+                    table.addCell(timedif.toString());
+                }
+                // On ajoute le tableau au document
+                document.add(table);
             }
-            // On parcourt les coordonnées en X et on les ajoute en colonne 1
-            for (int k = 0; k < tableauX.get(j).size(); k++) {
-                table.addCell(tableauX.get(j).get(k).toString());
-                table.addCell(tableauY.get(j).get(k).toString());
-            }
-            // On ajoute le tableau au document
-            document.add(table);
         }
 
         //Step 5: Close the document
@@ -551,8 +809,8 @@ public class comments_item18 extends Activity {
 
         if(bmergePdf) {
             try {
-                String lastFilePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + (docsCount-1) + ".pdf";
-                String newFilePath = pdfFolder.toString() + "/" + name + "_" + surname + "_" + timeStampSimple + "_" + "item18" + "_" + (docsCount+1) + ".pdf";
+                String lastFilePath = pdfFolder.toString() + "/" + name + "_" + timeStampSimple + "_" + "item18" + "_" + (docsCount-1) + ".pdf";
+                String newFilePath = pdfFolder.toString() + "/" + name + "_" + timeStampSimple + "_" + "item18" + "_" + (docsCount+1) + ".pdf";
 
                 File lastFile = new File(lastFilePath);
                 File newFile = new File(newFilePath);
@@ -600,6 +858,8 @@ public class comments_item18 extends Activity {
     /**
      * Demande à l'utilisateur ce qu'il veut faire après avoir enregistré la cartographie, en lui donnant trois choix : continuer la MFM, prévisualiser le PDF ou quitter l'application.
      */
+
+    /*
     private void promptForNextAction() {
         final String[] options = {getString(R.string.label_continue), getString(R.string.label_preview), getString(R.string.label_quit)};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -641,5 +901,9 @@ public class comments_item18 extends Activity {
         progressbar.setVisibility(View.GONE);
         builder.show();
     }
+    */
+
+
+
 }
 

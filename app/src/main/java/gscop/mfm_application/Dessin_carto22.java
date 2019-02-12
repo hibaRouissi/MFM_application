@@ -15,6 +15,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Alison.rl on 30/07/2017.
@@ -48,6 +49,16 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
     private HashMap<Integer,PathMeasure> animPathsMeasure = new HashMap<>();
     private HashMap<Integer,Long> animLastUpdated = new HashMap<>();
 
+    // inserted on 28/02
+    private ArrayList<Float> xDownList = new ArrayList<>();
+    private ArrayList<Float> yDownList = new ArrayList<>();
+
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+    private int myi=0;
+    private long lasttemp;
+
 
     public Dessin_carto22(Context context) {
         super(context);
@@ -69,9 +80,9 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setAntiAlias(true);
-        paint.setColor(Color.RED);
+        paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10);
+        paint.setStrokeWidth(85); // must be equal to linewidth in dessin_item_22
 
         image = BitmapFactory.decodeResource(getResources(), R.drawable.item22);
         image = getResizeBitmap(image);
@@ -81,6 +92,10 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+
+        // pour la nouvelle animation
+        myi=0;
+
         for(int j = 0; j < completedTabsX.size(); j++ ){
             animRunning.put(j,false);
             animPathsMeasure.put(j,null);
@@ -123,7 +138,41 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
 
         canvas.drawBitmap(image,mImageX,mImageY,null);
 
+        if (my_X.size()!=0){
+            if (myi==0){
+                lasttemp=System.currentTimeMillis();
+                canvas.drawPoint(my_X.get(myi), my_Y.get(myi), paint);
+                paint.setColor(Color.BLACK);
+                myi=1;
+            } else if (myi<my_X.size() ){
+                long waittime=(my_times.get(myi)-my_times.get(myi-1))-(System.currentTimeMillis()-lasttemp);
+                if (waittime>0){
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(waittime*9/10); //nous avançons en fonction de l'observation du temps de l'itinéraire
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+
+                    }
+                }
+                for (int toto=0; toto<=myi; toto++){
+                    canvas.drawPoint(my_X.get(toto), my_Y.get(toto), paint);
+                }
+                lasttemp=System.currentTimeMillis();
+                paint.setColor(Color.BLACK);
+                myi=myi+1;
+
+            } else {
+                animStop=true;
+                for (int toto=0; toto<=myi-1; toto++){
+                    canvas.drawPoint(my_X.get(toto), my_Y.get(toto), paint);
+                    paint.setColor(Color.BLACK);
+                }
+            }
+        }
+
+
         if(animStop){
+/*
             if(paths.size() == 0 && completedTabsX.size() != 0) {
                 setPaths();
                 invalidate();
@@ -134,17 +183,30 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
                         paint.setColor(Color.BLUE);
                     }
                     else{
-                        paint.setColor(Color.RED);
+                        paint.setColor(Color.BLACK);
                     }
                     canvas.drawPath(paths.get(j),paint);
                 }
+                // inserted on 28/02
+                for (int i = 0; i < xDownList.size(); i++) {
+                    if(isPalm.get(i)){
+                        paint.setColor(Color.BLACK);
+                    }
+                    else{
+                        // paint.setColor(Color.RED)// commented by adriana in 14/02/2018
+                        paint.setColor(Color.BLACK);
+                    }
+                    canvas.drawPoint(xDownList.get(i), yDownList.get(i), paint);
+                }
+                // until here 28/02
             }
+*/
         } else {
             for (int j = 0; j < paths.size(); j++) {
                 Log.d(TAG, " J : " + j);
                 isTime(j);
-                if (animRunning.get(j)) {drawAnim(canvas, j);}
-                else {drawStatic(canvas, j);}
+//                if (animRunning.get(j)) {drawAnim(canvas, j);}
+//                else {drawStatic(canvas, j);}
             }
             super.onDraw(canvas);
             invalidate();
@@ -219,10 +281,10 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
 
             // Draw Path
             if(isPalm.get(j)){
-                paint.setColor(Color.BLUE);
+//                paint.setColor(Color.BLUE);
             }
             else{
-                paint.setColor(Color.RED);
+//                paint.setColor(Color.BLACK);
             }
             canvas.drawPath(animPaths.get(j),paint);
         }
@@ -234,7 +296,7 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
                 paint.setColor(Color.BLUE);
             }
             else{
-                paint.setColor(Color.RED);
+                paint.setColor(Color.BLACK);
             }
             canvas.drawPath(paths.get(j),paint);
         }
@@ -243,7 +305,7 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
     private Bitmap getResizeBitmap(Bitmap bitmap){
         // L'image serait redimensionné pour le taille du quadrillage ( 600px avec 300ppi de résolution)
         float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
-        int mImageWidth = 600 ;
+        int mImageWidth = 540 ; // inserted by adriana in 12/01/2018 to reduce the size
         int mImageHeight = Math.round(mImageWidth*aspect_ratio);
         bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
         return bitmap.copy(Bitmap.Config.ARGB_8888,false);
@@ -271,6 +333,23 @@ public class Dessin_carto22 extends View implements View.OnClickListener {
     public void getIsPalm(ArrayList<Boolean> palm){
         isPalm = palm;
     }
+    // inserted on 28/02
+    public void setxDownList(ArrayList<Float> xList) {
+        xDownList = xList;
+    }
+    public void setyDownList(ArrayList<Float> yList) {
+        yDownList = yList;
+    }
+
+
+    public void getmy_times(ArrayList<Long> my_timesx) { my_times = my_timesx; }
+    public void getmy_X(ArrayList<Float> my_Xx) {
+        my_X= my_Xx;
+    }
+    public void getmy_Y(ArrayList<Float> my_Yx) {
+        my_Y= my_Yx;
+    }
+
 
 }
 

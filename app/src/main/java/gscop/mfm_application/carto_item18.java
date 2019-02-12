@@ -46,6 +46,23 @@ public class carto_item18 extends Activity {
     private ArrayList eventDownTimes;
     private Float mImageX,mImageY;
     private Long durationTime;
+    private int tellway;
+    // variáveis de cotação automática
+    private boolean test1;
+    private boolean test2;
+    private boolean test3;
+    private boolean test4;
+    private boolean test5;
+    private boolean test6;
+    private boolean test7;
+    private boolean test_incomplet;
+    private int resultat_cotation_therapeute;
+
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,16 +84,38 @@ public class carto_item18 extends Activity {
             tableauY = intent.getIntegerArrayListExtra("tableauY");
             eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
             eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
-            mImageX = intent.getFloatExtra("mImageX",0f);
-            mImageY = intent.getFloatExtra("mImageY",0f);
+            mImageX = intent.getFloatExtra("mImageX", 0f);
+            mImageY = intent.getFloatExtra("mImageY", 0f);
             isPalm = (ArrayList) intent.getSerializableExtra("isPalm");
-            durationTime = intent.getLongExtra("durationTime",0);
+            tellway=intent.getIntExtra("adriana",0);
+            // itens da cotação automática
+            test1 = intent.getBooleanExtra("test1",false);
+            test2 = intent.getBooleanExtra("test2",false);
+            test3 = intent.getBooleanExtra("test3",false);
+            test4 = intent.getBooleanExtra("test4",false);
+            test5 = intent.getBooleanExtra("test5",false);
+            test6 = intent.getBooleanExtra("test6",false);
+            test7 = intent.getBooleanExtra("test7",false);
+            test_incomplet = intent.getBooleanExtra("test_incomplet",false);
+            resultat_cotation_therapeute=intent.getIntExtra("resultat_cotation_therapeute",4);
+
+
+            my_times=(ArrayList) intent.getSerializableExtra("my_times");
+            my_X=(ArrayList) intent.getSerializableExtra("my_X");
+            my_Y=(ArrayList) intent.getSerializableExtra("my_Y");
+
+            durationTime = intent.getLongExtra("durationTime", 0);
             dessin_carto18.getTabX(tableauX);
             dessin_carto18.getTabY(tableauY);
             dessin_carto18.getEventUpTimes(eventUpTimes);
             dessin_carto18.getEventDownTimes(eventDownTimes);
-            dessin_carto18.getCdPosition(mImageX,mImageY);
+            dessin_carto18.getCdPosition(mImageX, mImageY);
             dessin_carto18.getIsPalm(isPalm);
+
+            dessin_carto18.getmy_times(my_times);
+            dessin_carto18.getmy_X(my_X);
+            dessin_carto18.getmy_Y(my_Y);
+
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
             try {
                 File f = new File(path, "cartographie.png");
@@ -86,6 +125,49 @@ public class carto_item18 extends Activity {
                 e.printStackTrace();
             }
         }
+
+        // Pour le bouton "Valider"
+        boutonValider = (Button) findViewById(R.id.boutonValider);
+        boutonValider.setOnClickListener(new View.OnClickListener() {
+                                             @Override
+                                             public void onClick(View v) {
+                                                 boutonValider.setBackgroundColor(Color.GRAY);
+
+                                                 Intent myIntent = new Intent(carto_item18.this, comments_item18.class);
+                                                 myIntent.putExtra("name", name);
+                                                 myIntent.putExtra("surname", surname);
+                                                 myIntent.putExtra("birthdate", birthdate);
+                                                 myIntent.putExtra("path", path);
+                                                 myIntent.putExtra("tableauX", tableauX);
+                                                 myIntent.putExtra("tableauY", tableauY);
+                                                 myIntent.putExtra("varRandom", varRandom);
+                                                 myIntent.putExtra("eventUpTimes", eventUpTimes);
+                                                 myIntent.putExtra("eventDownTimes", eventDownTimes);
+                                                 myIntent.putExtra("mImageX", mImageX);
+                                                 myIntent.putExtra("mImageY", mImageY);
+                                                 myIntent.putExtra("isPalm", isPalm);
+                                                 myIntent.putExtra("durationTime", durationTime);
+                                                 myIntent.putExtra("Gomes", tellway);
+                                                 // itens da cotação automática
+                                                 myIntent.putExtra("test1", test1);
+                                                 myIntent.putExtra("test2", test2);
+                                                 myIntent.putExtra("test3", test3);
+                                                 myIntent.putExtra("test4", test4);
+                                                 myIntent.putExtra("test5", test5);
+                                                 myIntent.putExtra("test6", test6);
+                                                 myIntent.putExtra("test7", test7);
+                                                 myIntent.putExtra("test_incomplet", test_incomplet);
+                                                 myIntent.putExtra("my_times",my_times);
+                                                 myIntent.putExtra("my_X",my_X);
+                                                 myIntent.putExtra("my_Y",my_Y);
+                                                 myIntent.putExtra("resultat_cotation_therapeute",resultat_cotation_therapeute);
+                                                 startActivity(myIntent);
+                                                 // On ferme l'activité en cours
+                                                 finish();
+
+
+                                             }
+                                         });
 
         infosPatient = (TextView) findViewById(R.id.infosPatient);
         Log.d(TAG," duration : " + durationTime);
@@ -116,7 +198,7 @@ public class carto_item18 extends Activity {
             }
         });
 
-        // Pour le bouton "Recommencer"
+/*        // Pour le bouton "Recommencer"
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         boutonRecommencer = (Button) findViewById(R.id.boutonRecommencer);
         boutonRecommencer.setOnClickListener(new View.OnClickListener() {
@@ -146,11 +228,13 @@ public class carto_item18 extends Activity {
                                 finish();
                             }
                         });
-                AlertDialog alert = builder.create();
+                        AlertDialog alert = builder.create();
                 alert.show();
             }
         });
+*/
 
+/*
         // Pour le bouton "Valider"
         boutonValider = (Button) findViewById(R.id.boutonValider);
         boutonValider.setOnClickListener(new View.OnClickListener() {
@@ -159,6 +243,7 @@ public class carto_item18 extends Activity {
                 boutonValider.setBackgroundColor(Color.GRAY);
                 // Quand on clique sur le bouton valider, on ouvre l'interface des commentaires du kiné
                 // Si varRandom = 1, on doit faire la version papier avant d'accéder aux commentaires
+                varRandom =0; // inserte on 01/03
                 if (varRandom == 1) {
                     // On demande de réaliser l'item 18 version papier
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -210,6 +295,13 @@ public class carto_item18 extends Activity {
                 }
             }
         });
+
+        */
+
+
+
+
+
     }
 
     // Quand on appuie sur la touche retour de la tablette -> comme pour le bouton recommencer

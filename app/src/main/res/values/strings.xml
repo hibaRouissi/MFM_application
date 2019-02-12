@@ -6,7 +6,7 @@
     <string name="mandatory"> *  </string>
     <string name="name"> Nom :</string>
     <string name="surname"> Prénom :</string>
-    <string name="birthdate"> Date de naissance :</string>
+    <string name="birthdate"> Date de naissance : </string>
     <string name="name2">Nom</string>
     <string name="surname2">Prénom</string>
     <string name="erase">Effacer</string>
@@ -22,7 +22,7 @@
     <string name="item19image">Image de l\'item 19</string>
     <string name="errorDate">Veuillez choisir une date.</string>
     <string name="errorName">"Le champ nom ne doit contenir que des lettres.</string>
-    <string name="errorSurname">"Le champ prénom ne doit contenir que des lettres.</string>
+    <string name="errorSurname">"Le champ ne doit contenir que des chiffres.</string>
     <string name="errorVoid">"Veuillez remplir tous les champs."</string>
     <string name="internalError">"Une erreur interne en rapport avec le format de la date est survenue."</string>
     <string name="confirmBackAccueil">"Voulez-vous vraiment changer de patient ? \n </string>
@@ -32,6 +32,8 @@
     <string name="movequad"> Déplacement du quadrillage… </string>
     <string name="moverect"> Déplacement des rectangles… </string>
     <string name="toast_movequad"> Le quadrillage peut être déplacé </string>
+    //created by Adriana 12/03/2018
+    <string name="toast_movequads"> Les quadrillages peuvent être déplacés </string>
     <string name="toast_movecd"> Le CD peut être déplacé </string>
     <string name="toast_moverect"> Les rectangles peuvent être déplacés… </string>
     <string name="toast_blockcd"> Il faut finir le déplacement du CD </string>

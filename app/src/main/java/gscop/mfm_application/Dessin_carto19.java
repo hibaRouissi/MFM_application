@@ -16,6 +16,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Alison.rl on 30/07/2017.
@@ -29,7 +30,11 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
     private Boolean animStop;
     private int stop = 0;
     private float mImageX,mImageY;
+    //insered by Adriana 25_02_18 (pour enregistrer le dessin en pdf)
+    private float mImage2X,mImage2Y;
     private int mRectX, mRectY;
+    //insered by Adriana 25_02_18 (pour enregistrer le dessin en pdf)
+    private int mRect2X, mRect2Y;
     private static final String TAG = "gscop.mfm_application";
 
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
@@ -48,6 +53,13 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
     private HashMap<Integer,Boolean> animRunning = new HashMap<>();
     private HashMap<Integer,PathMeasure> animPathsMeasure = new HashMap<>();
     private HashMap<Integer,Long> animLastUpdated = new HashMap<>();
+
+    // nouvelle animation
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+    private int myi=0;
+    private long lasttemp;
 
 
     public Dessin_carto19(Context context) {
@@ -72,13 +84,14 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
         paint.setAntiAlias(true);
         paint.setColor(Color.BLUE);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(20);
+        //paint.setStrokeWidth(20); Commented by Adriana
+        paint.setStrokeWidth(5);
 
         mPaintRect.setAntiAlias(true);
         mPaintRect.setColor(Color.BLACK);
         mPaintRect.setStyle(Paint.Style.STROKE);
-        mPaintRect.setStrokeWidth(6);
-
+        //mPaintRect.setStrokeWidth(6); Commented by Adriana
+        mPaintRect.setStrokeWidth(19);
 
         animStop = true;
         this.setOnClickListener(this);
@@ -86,6 +99,9 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        // pour la nouvelle animation
+        myi=0;
+
         for(int j = 0; j < completedTabsX.size(); j++ ){
             animRunning.put(j,false);
             animPathsMeasure.put(j,null);
@@ -126,16 +142,58 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        mRectX = (int) mImageX - 210;
-        mRectY = (int) mImageY + 100;
+        // inserted in 25/02/2018. See dessin_item_19
+        mRectX = (int) mImageX ;
+        mRectY = (int) mImageY ;
+        mRect2X = (int) mImage2X ;
+        mRect2Y = (int) mImage2Y ;
 
-
-        Rect rect = new Rect(mRectX, mRectY,(mRectX + 420),(mRectY + 110));
+        Rect rect = new Rect ((mRectX - 217), (mRectY + 63),(mRectX + 217),(mRectY - 63));
         canvas.drawRect(rect,mPaintRect);
-        Rect rect1 = new Rect(mRectX ,(mRectY - 210),(mRectX + 420),(mRectY - 100));
-        canvas.drawRect(rect1,mPaintRect);
+
+        paint.setStrokeWidth(8);
+
+        if (my_X.size()!=0){
+            if (myi==0){
+                lasttemp=System.currentTimeMillis();
+                canvas.drawPoint(my_X.get(myi), my_Y.get(myi), paint);
+                paint.setColor(Color.MAGENTA);
+                myi=1;
+            } else if (myi<my_X.size() ){
+                long waittime=(my_times.get(myi)-my_times.get(myi-1))-(System.currentTimeMillis()-lasttemp);
+                if (waittime>0){
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(waittime*9/10); // adiantamos com base na observação do tempo do traçado
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+
+                    }
+                }
+                for (int toto=0; toto<=myi; toto++){
+                    canvas.drawPoint(my_X.get(toto), my_Y.get(toto), paint);
+                }
+                lasttemp=System.currentTimeMillis();
+                paint.setColor(Color.RED);
+                myi=myi+1;
+
+            } else {
+                animStop=true;
+                setPaths();
+                paint.setStrokeWidth(5);
+                for(int j = 0; j < paths.size(); j++){
+                    paint.setColor(Color.RED);
+                    canvas.drawPath(paths.get(j),paint);
+                }
+            }
+        }
+
+
+        paint.setStrokeWidth(5);
+
+
 
         if(animStop){
+/*
             if(paths.size() == 0 && completedTabsX.size() != 0) {
                 setPaths();
                 invalidate();
@@ -151,19 +209,22 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
                     canvas.drawPath(paths.get(j),paint);
                 }
             }
+ */
         } else {
             for (int j = 0; j < paths.size(); j++) {
                 Log.d(TAG, " J : " + j);
                 isTime(j);
-                if (animRunning.get(j)) {drawAnim(canvas, j);}
-                else {drawStatic(canvas, j);}
+//                if (animRunning.get(j)) {drawAnim(canvas, j);}
+//                else {drawStatic(canvas, j);}
             }
             super.onDraw(canvas);
             invalidate();
         }
 
         super.onDraw(canvas);
-    }
+    }//
+
+
 
     public void isTime(int j){
         if (j != 0) {
@@ -234,7 +295,7 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
                 paint.setColor(Color.BLUE);
             }
             else{
-                paint.setColor(Color.RED);
+//                paint.setColor(Color.RED);
             }
             canvas.drawPath(animPaths.get(j),paint);
         }
@@ -275,9 +336,20 @@ public class Dessin_carto19 extends View implements View.OnClickListener {
         eventDownTimes = event_times;
     }
 
-    public void getCdPosition(Float x, Float y){
+    public void getmy_times(ArrayList<Long> my_timesx) { my_times = my_timesx; }
+    public void getmy_X(ArrayList<Float> my_Xx) {
+        my_X= my_Xx;
+    }
+    public void getmy_Y(ArrayList<Float> my_Yx) {
+        my_Y= my_Yx;
+    }
+
+    public void getCdPosition(Float x, Float y, Float x2, Float y2){
         mImageX = x;
         mImageY = y;
+        //insered by Adriana 25_02_18 (pour enregistrer le dessin en pdf)
+        mImage2X = x2;
+        mImage2Y = y2;
     }
 
     public void getIsPalm(ArrayList<Boolean> palm){

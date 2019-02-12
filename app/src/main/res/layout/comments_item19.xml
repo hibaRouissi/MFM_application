@@ -42,83 +42,12 @@
         android:layout_marginTop="20dp"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="@string/mandatory"
-            android:textColor="#f2053c"
-            android:textSize="25sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textCotationPaper"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1"
-            android:ems="12"
-            android:text="@string/cotationPaper"
-            android:textColor="#0d8dc9"
-            android:textSize="30sp"
-            android:textStyle="bold" />
-
         <RadioGroup
             android:id="@+id/radioGroupCotationPaper"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/radioButton0Paper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/zero"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioButton1Paper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/one"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioButton2Paper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/two"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioButton3Paper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/three"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioButtonNSPPaper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/donotknow"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
 
         </RadioGroup>
     </LinearLayout>
@@ -197,18 +126,108 @@
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
+        </RadioGroup>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/myx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/mandatory"
+            android:textColor="#f2053c"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textCotationTablette"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:ems="12"
+            android:text="Cotation Tablette (automatique):"
+            android:textColor="#0d8dc9"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupCotationTabletAutomatique"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
             <RadioButton
-                android:id="@+id/radioButtonNSPTablet"
-                android:layout_width="wrap_content"
+                android:id="@+id/radioButtonCotationAutomatiquet0"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/donotknow"
+                android:text="@string/zero"
                 android:textColor="#7e8183"
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
+            <RadioButton
+                android:id="@+id/radioButtonCotationAutomatiquet1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/one"
+                android:textColor="#7e8183"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioButtonCotationAutomatiquet2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/two"
+                android:textColor="#7e8183"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioButtonCotationAutomatiquet3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/three"
+                android:textColor="#7e8183"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+
         </RadioGroup>
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40sp"
+        android:layout_marginBottom="40sp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tellwaytext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:gravity="center"
+            android:text=" Le numéro de trace est: : "
+            android:textColor="#0d8dc9"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -235,24 +254,6 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <CheckBox
-                android:id="@+id/checkBoxAppuiPaume"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/appui"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <CheckBox
-                android:id="@+id/checkBoxPause"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/pause"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
         </LinearLayout>
 
         <LinearLayout
@@ -260,24 +261,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
-
-            <CheckBox
-                android:id="@+id/checkBoxChange"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/change"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <CheckBox
-                android:id="@+id/checkBoxCompens"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/compensationTronc"
-                android:textColor="#7e8183"
-                android:textSize="25sp"
-                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -298,6 +281,17 @@
         android:hint="@string/commentaire_libre"
         tools:ignore="LabelFor,TextFields" />
 
+    <Button
+        android:id="@+id/buttonDessin_19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"
+        android:background="#9bc3f1"
+        android:ems="8"
+        android:text="VOIR dessin_19"
+        android:textColor="#055174"
+        android:textSize="15sp" />
 
     <Button
         android:id="@+id/buttonSave"

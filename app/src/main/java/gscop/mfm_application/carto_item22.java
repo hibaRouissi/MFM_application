@@ -46,6 +46,40 @@ public class carto_item22 extends Activity {
     private ArrayList eventDownTimes;
     private Float mImageX,mImageY;
     private Long durationTime;
+    // inserted on 28/02
+    private ArrayList xDownList;
+    private ArrayList yDownList;
+
+
+    private boolean test1 ;// si le premier contact est au centre de l'image
+    private boolean test2 ; //si le patient a levé son doigt après le premier contact au centre
+    private boolean digitou_1 ;
+    private boolean digitou_2 ;
+    private boolean digitou_3 ;
+    private boolean digitou_4 ;
+    private boolean digitou_5 ;
+    private boolean digitou_6 ;
+    private boolean digitou_7 ;
+    private boolean digitou_8 ;
+    private boolean digitou_9 ;
+    private boolean digitou_10 ; // out of design
+
+    private boolean cruzou_1 ;
+    private boolean cruzou_2 ;
+    private boolean cruzou_3 ;
+    private boolean cruzou_4 ;
+    private boolean cruzou_5 ;
+    private boolean cruzou_6 ;
+    private boolean cruzou_7 ;
+    private boolean cruzou_8 ;
+    private boolean cruzou_9 ;
+    private boolean cruzou_10 ; // out of design
+    private boolean test_line_ok;
+
+    private ArrayList<Long> my_times = new ArrayList<>();
+    private ArrayList<Float> my_X = new ArrayList<>();
+    private ArrayList<Float> my_Y = new ArrayList<>();
+    private int resultat_cotation_therapeute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,17 +100,57 @@ public class carto_item22 extends Activity {
             tableauY = intent.getIntegerArrayListExtra("tableauY");
             eventUpTimes = (ArrayList) intent.getSerializableExtra("eventUpTimes");
             eventDownTimes = (ArrayList) intent.getSerializableExtra("eventDownTimes");
-            mImageX = intent.getFloatExtra("mImageX",0f);
-            mImageY = intent.getFloatExtra("mImageY",0f);
+            mImageX = intent.getFloatExtra("mImageX", 0f);
+            mImageY = intent.getFloatExtra("mImageY", 0f);
             isPalm = (ArrayList) intent.getSerializableExtra("isPalm");
-            durationTime = intent.getLongExtra("durationTime",0);
+            durationTime = intent.getLongExtra("durationTime", 0);
+            // inserted on 28/02
+            xDownList = (ArrayList) intent.getSerializableExtra("xDownList");
+            yDownList = (ArrayList) intent.getSerializableExtra("yDownList");
+            dessin_carto22.setxDownList(xDownList);
+            dessin_carto22.setyDownList(yDownList);
+            //28/02 until here
             dessin_carto22.getTabX(tableauX);
             dessin_carto22.getTabY(tableauY);
             dessin_carto22.getEventUpTimes(eventUpTimes);
             dessin_carto22.getEventDownTimes(eventDownTimes);
-            dessin_carto22.getCdPosition(mImageX,mImageY);
+            dessin_carto22.getCdPosition(mImageX, mImageY);
             dessin_carto22.getIsPalm(isPalm);
             varRandom = intent.getIntExtra("varRandom", -1); // -1 par défaut
+            resultat_cotation_therapeute=intent.getIntExtra("resultat_cotation_therapeute",4);
+
+            my_times=(ArrayList) intent.getSerializableExtra("my_times");
+            my_X=(ArrayList) intent.getSerializableExtra("my_X");
+            my_Y=(ArrayList) intent.getSerializableExtra("my_Y");
+            dessin_carto22.getmy_times(my_times);
+            dessin_carto22.getmy_X(my_X);
+            dessin_carto22.getmy_Y(my_Y);
+
+
+            test1 = intent.getBooleanExtra("test1", false);
+            test2 = intent.getBooleanExtra("test2", false);
+            digitou_1 = intent.getBooleanExtra("digitou_1", false);
+            digitou_2 = intent.getBooleanExtra("digitou_2", false);
+            digitou_3 = intent.getBooleanExtra("digitou_3", false);
+            digitou_4 = intent.getBooleanExtra("digitou_4", false);
+            digitou_5 = intent.getBooleanExtra("digitou_5", false);
+            digitou_6 = intent.getBooleanExtra("digitou_6", false);
+            digitou_7 = intent.getBooleanExtra("digitou_7", false);
+            digitou_8 = intent.getBooleanExtra("digitou_8", false);
+            digitou_9 = intent.getBooleanExtra("digitou_9", false);
+            digitou_10 = intent.getBooleanExtra("digitou_10", false);
+            cruzou_1 = intent.getBooleanExtra("cruzou_1", false);
+            cruzou_2 = intent.getBooleanExtra("cruzou_2", false);
+            cruzou_3 = intent.getBooleanExtra("cruzou_3", false);
+            cruzou_4 = intent.getBooleanExtra("cruzou_4", false);
+            cruzou_5 = intent.getBooleanExtra("cruzou_5", false);
+            cruzou_6 = intent.getBooleanExtra("cruzou_6", false);
+            cruzou_7 = intent.getBooleanExtra("cruzou_7", false);
+            cruzou_8 = intent.getBooleanExtra("cruzou_8", false);
+            cruzou_9 = intent.getBooleanExtra("cruzou_9", false);
+            cruzou_10 = intent.getBooleanExtra("cruzou_10", false);
+            test_line_ok = intent.getBooleanExtra("test_line_ok", false);
+
             try {
                 File f = new File(path, "cartographie.png");
                 cartoBitmap = BitmapFactory.decodeStream(new FileInputStream(f));
@@ -85,9 +159,10 @@ public class carto_item22 extends Activity {
             }
         }
 
+
         infosPatient = (TextView) findViewById(R.id.infosPatient);
-        Log.d(TAG," duration : " + durationTime);
-        infosPatient.setText("Patient : " + name + " " + surname + " \nDurée : " + durationTime/1000 + " secondes ");
+        Log.d(TAG, " duration : " + durationTime);
+        infosPatient.setText("Patient : " + name + " " + surname + " \nDurée : " + durationTime / 1000 + " secondes ");
 
         // Pour le bouton "Quitter"
         buttonExit = (Button) findViewById(R.id.buttonExit);
@@ -114,103 +189,68 @@ public class carto_item22 extends Activity {
             }
         });
 
-        // Pour le bouton "Recommencer"
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        boutonRecommencer = (Button) findViewById(R.id.boutonRecommencer);
-        boutonRecommencer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boutonRecommencer.setBackgroundColor(Color.GRAY);
-                // Quand on clique sur le bouton recommencer, on retourne sur l'interface do_item22
-                builder.setMessage("Êtes-vous certain de vouloir recommencer l'exercice ? \n (le tracé sera perdu)")
-                        .setCancelable(false)
-                        .setNegativeButton("Non", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // On remet le bouton recommencer en bleu
-                                boutonRecommencer.setBackgroundColor(getResources().getColor(R.color.myBlue));
-                                dialog.cancel();
-                            }
-                        })
-                        .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                //  On revient à l'écran de réalisation de l'item 22
-                                Intent myIntent = new Intent(carto_item22.this, do_item22.class);
-                                myIntent.putExtra("name", name);
-                                myIntent.putExtra("surname", surname);
-                                myIntent.putExtra("birthdate", birthdate);
-                                myIntent.putExtra("varRandom", varRandom);
-                                startActivity(myIntent);
-                                // On ferme l'activité en cours
-                                finish();
-                            }
-                        });
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
-        });
-
         // Pour le bouton "Valider"
         boutonValider = (Button) findViewById(R.id.boutonValider);
         boutonValider.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boutonValider.setBackgroundColor(Color.GRAY);
-                // Quand on clique sur le bouton valider, on ouvre l'interface des commentaires du kiné
-                // Si varRandom = 1, on doit faire la version papier avant d'accéder aux commentaires
-                if (varRandom == 1) {
-                    // On demande de réaliser l'item 22 version papier
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setMessage(R.string.paper22)
-                            .setTitle("MFM Papier")
-                            .setCancelable(false)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    Intent myIntent = new Intent(carto_item22.this, comments_item22.class);
-                                    myIntent.putExtra("name", name);
-                                    myIntent.putExtra("surname", surname);
-                                    myIntent.putExtra("birthdate", birthdate);
-                                    myIntent.putExtra("path", path);
-                                    myIntent.putExtra("tableauX", tableauX);
-                                    myIntent.putExtra("tableauY", tableauY);
-                                    myIntent.putExtra("varRandom", varRandom);
-                                    myIntent.putExtra("eventUpTimes", eventUpTimes);
-                                    myIntent.putExtra("eventDownTimes", eventDownTimes);
-                                    myIntent.putExtra("mImageX",mImageX);
-                                    myIntent.putExtra("mImageY",mImageY);
-                                    myIntent.putExtra("isPalm",isPalm);
-                                    myIntent.putExtra("durationTime",durationTime);
-                                    startActivity(myIntent);
-                                    // On ferme l'activité en cours
-                                    finish();
-                                }
-                            });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                } else {
-                    // varRandom = 0 -> on lance simplement l'interface des commentaires
-                    Intent myIntent = new Intent(carto_item22.this, comments_item22.class);
-                    myIntent.putExtra("name", name);
-                    myIntent.putExtra("surname", surname);
-                    myIntent.putExtra("birthdate", birthdate);
-                    myIntent.putExtra("path", path);
-                    myIntent.putExtra("tableauX", tableauX);
-                    myIntent.putExtra("tableauY", tableauY);
-                    myIntent.putExtra("varRandom", varRandom);
-                    myIntent.putExtra("eventUpTimes", eventUpTimes);
-                    myIntent.putExtra("eventDownTimes", eventDownTimes);
-                    myIntent.putExtra("mImageX",mImageX);
-                    myIntent.putExtra("mImageY",mImageY);
-                    myIntent.putExtra("isPalm",isPalm);
-                    myIntent.putExtra("durationTime",durationTime);
-                    startActivity(myIntent);
-                    // On ferme l'activité en cours
-                    finish();
-                }
+                Intent myIntent = new Intent(carto_item22.this, comments_item22.class);
+                myIntent.putExtra("name", name);
+                myIntent.putExtra("surname", surname);
+                myIntent.putExtra("birthdate", birthdate);
+                myIntent.putExtra("path", path);
+                myIntent.putExtra("tableauX", tableauX);
+                myIntent.putExtra("tableauY", tableauY);
+                myIntent.putExtra("varRandom", varRandom);
+                myIntent.putExtra("eventUpTimes", eventUpTimes);
+                myIntent.putExtra("eventDownTimes", eventDownTimes);
+                myIntent.putExtra("mImageX", mImageX);
+                myIntent.putExtra("mImageY", mImageY);
+                myIntent.putExtra("isPalm", isPalm);
+                myIntent.putExtra("durationTime", durationTime);
+
+                myIntent.putExtra("test1", test1);
+                myIntent.putExtra("test2", test2);
+                myIntent.putExtra("digitou_1", digitou_1);
+                myIntent.putExtra("digitou_2", digitou_2);
+                myIntent.putExtra("digitou_3", digitou_3);
+                myIntent.putExtra("digitou_4", digitou_4);
+                myIntent.putExtra("digitou_5", digitou_5);
+                myIntent.putExtra("digitou_6", digitou_6);
+                myIntent.putExtra("digitou_7", digitou_7);
+                myIntent.putExtra("digitou_8", digitou_8);
+                myIntent.putExtra("digitou_9", digitou_9);
+                myIntent.putExtra("digitou_10", digitou_10);
+                myIntent.putExtra("cruzou_1", cruzou_1);
+                myIntent.putExtra("cruzou_2", cruzou_2);
+                myIntent.putExtra("cruzou_3", cruzou_3);
+                myIntent.putExtra("cruzou_4", cruzou_4);
+                myIntent.putExtra("cruzou_5", cruzou_5);
+                myIntent.putExtra("cruzou_6", cruzou_6);
+                myIntent.putExtra("cruzou_7", cruzou_7);
+                myIntent.putExtra("cruzou_8", cruzou_8);
+                myIntent.putExtra("cruzou_9", cruzou_9);
+                myIntent.putExtra("cruzou_10", cruzou_10);
+                myIntent.putExtra("xDownList", xDownList);
+                myIntent.putExtra("yDownList", yDownList);
+                myIntent.putExtra("test_line_ok",test_line_ok);
+
+                myIntent.putExtra("my_times",my_times);
+                myIntent.putExtra("my_X",my_X);
+                myIntent.putExtra("my_Y",my_Y);
+                myIntent.putExtra("resultat_cotation_therapeute",resultat_cotation_therapeute);
+
+                startActivity(myIntent);
+                // On ferme l'activité en cours
+                finish();
+
             }
         });
+
+
     }
 
-    // Quand on appuie sur la touche retour de la tablette -> comme pour le bouton recommencer
+     // Quand on appuie sur la touche retour de la tablette -> comme pour le bouton recommencer
     private boolean back_answer = false;
 
     @Override

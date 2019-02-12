@@ -6,11 +6,12 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/mfm"
-        android:label="@string/app_name"
+        android:label="MFM App-TabM2e"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
@@ -22,6 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".choice_item" />
         <activity android:name=".consignes_item18" />
         <activity android:name=".do_item18" />

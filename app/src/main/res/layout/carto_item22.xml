@@ -16,19 +16,6 @@
         android:id="@+id/linearLayout2">
 
         <Button
-            android:id="@+id/boutonRecommencer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
-            android:layout_weight="1"
-            android:background="#9bc3f1"
-            android:ems="8"
-            android:text="@string/restart"
-            android:textColor="#055174"
-            android:textSize="30sp"
-            tools:ignore="ButtonStyle" />
-
-        <Button
             android:id="@+id/boutonValider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -36,7 +23,7 @@
             android:layout_weight="1"
             android:background="#9bc3f1"
             android:ems="8"
-            android:text="@string/valid"
+            android:text="RETOURNER"
             android:textColor="#055174"
             android:textSize="30sp"
             tools:ignore="ButtonStyle" />
