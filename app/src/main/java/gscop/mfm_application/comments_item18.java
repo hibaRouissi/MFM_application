@@ -239,7 +239,7 @@ public class comments_item18 extends Activity {
             if (resultat_cotation_therapeute==3) boutonCotation3Tablet.setChecked(true);
         }
 
-        // para a cotação automática
+        // pour la cotation auto.
         radioGroupCotationautomatique   = (RadioGroup)  findViewById(R.id.radioGroupCotationTabletAutomatique);
         boutonCotation0automatique      = (RadioButton) findViewById(R.id.radioButtonCotationAutomatiquet0);
         boutonCotation1automatique      = (RadioButton) findViewById(R.id.radioButtonCotationAutomatiquet1);
@@ -464,7 +464,7 @@ public class comments_item18 extends Activity {
                 textStateSaving.setText(R.string.savedOK);
                 saveSQL();
 
-                // Commented by Adriana 05/03/2018 (to remove the call:"que voulez-vous faires"
+                // Commented by Adriana 05/03/2018 (to remove the call:"que voulez-vous faire"
                 //promptForNextAction();
 
                 //inserted by Adriana 05/03/2018

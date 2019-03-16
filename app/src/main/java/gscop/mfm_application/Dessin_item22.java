@@ -1,20 +1,23 @@
 package gscop.mfm_application;
 
 import android.content.Context;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.RectF;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -23,45 +26,37 @@ import java.util.HashMap;
  */
 
 public class Dessin_item22 extends View {
-
     private static final String TAG = "gscop.mfm_application";
+    private final Dessin_item22 context = this;
+    private final Paint paint = new Paint();
+    private final Paint mPaintImage = new Paint();
+    private final RectF dirtyRect = new RectF();
+    int down_block;
+    int move_block;
+    int up_block;
+    int fisrt_block;
+    int current_block;
+    int centerx = 767;
+    int centery = 1268;
+    int blockside = 155;
+    int blockoffset = 172;
+    int linewidth = 90; // Réglage du bord tactile
+    // variables pour la manipulation de points. delta_distance = distance entre le point actuel et le point précédent
+    int lastX;
+    int lastY;
     private Bitmap image, image1;
     private Bitmap custom_image;
     private Canvas canvas_cv = new Canvas();
     private float mImageX, mImageY;
-    private final Paint paint = new Paint();
-    private final Paint mPaintImage = new Paint();
     private Long lastUpTime = 0l;
-
     private HashMap<Integer, Path> paths = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsX = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsY = new HashMap<>();
     private HashMap<Integer, Long> eventTimes = new HashMap<>();
     private HashMap<Integer, Boolean> isPalmTouch = new HashMap<>();
-
     private ArrayList<Path> completedPaths = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsY = new ArrayList<>();
-    private ArrayList<Long> eventDownTimes = new ArrayList<>();
-    private ArrayList<Long> eventUpTimes = new ArrayList<>();
-    private ArrayList<Boolean> isPalm = new ArrayList<>();
-
-    private final RectF dirtyRect = new RectF();
-
-    private float xDown;
-    private float yDown;
-    private ArrayList<Float> xDownList = new ArrayList<>();
-    private ArrayList<Float> yDownList = new ArrayList<>();
-
-    private boolean on = false;
-
-    private Paint mysquare = new Paint(); // utilisé uniquement pour marquer les centres tactiles
-
-
-    // cotation automatique. variables à réinitialiser si l'utilisateur clique sur effacer
-    private boolean firsttouch = true; // la toute premiere touche, jusqu´au point up
-    private boolean test1 = false; // si le premier contact est au centre de la figure
-    private boolean test2 = false; // si le patient a levé son doigt après le premier contact au centre
 
     //         ---------------------------
     //         |        |        |        |
@@ -76,7 +71,19 @@ public class Dessin_item22 extends View {
     //         |   7    |   8    |    9   |
     //         |        |        |        |
     //         ---------------------------
-
+    private ArrayList<Long> eventDownTimes = new ArrayList<>();
+    private ArrayList<Long> eventUpTimes = new ArrayList<>();
+    private ArrayList<Boolean> isPalm = new ArrayList<>();
+    private float xDown;
+    private float yDown;
+    private ArrayList<Float> xDownList = new ArrayList<>();
+    private ArrayList<Float> yDownList = new ArrayList<>();
+    private boolean on = false;
+    private Paint mysquare = new Paint(); // utilisé uniquement pour marquer les centres tactiles
+    // cotation automatique. variables à réinitialiser si l'utilisateur clique sur effacer
+    private boolean firsttouch = true; // la toute premiere touche, jusqu´au point up
+    private boolean test1 = false; // si le premier contact est au centre de la figure
+    private boolean test2 = false; // si le patient a levé son doigt après le premier contact au centre
     private boolean digitou_1 = false;
     private boolean digitou_2 = false;
     private boolean digitou_3 = false;
@@ -87,48 +94,25 @@ public class Dessin_item22 extends View {
     private boolean digitou_8 = false;
     private boolean digitou_9 = false;
     private boolean digitou_10 = false; // out of design
-
     private boolean deactivate_drawing = false;
-
     private boolean cruzou_1 = false;
     private boolean cruzou_2 = false;
     private boolean cruzou_3 = false;
     private boolean cruzou_4 = false;
     private boolean cruzou_5 = false;
-    private boolean cruzou_6 = false;
-    private boolean cruzou_7 = false;
-    private boolean cruzou_8 = false;
-    private boolean cruzou_9 = false;
-    private boolean cruzou_10 = false; // out of design
-
-    private boolean test_line;
-    private boolean test_line_ok = true;
-
-
-    int down_block;
-    int move_block;
-    int up_block;
-
-    int fisrt_block;
-    int current_block;
 
 
     // centerx: x à partir du centre du dessin complet
     // centery: y du centre du dessin complet
     // blockside: côté qui doit être considéré pour savoir si le point est à l'intérieur d'un bloc
     // blockoffset: offset entre les blocs.
-
-    int centerx = 767;
-    int centery = 1268;
-    int blockside = 155;
-    int blockoffset = 172;
-    int linewidth = 90; // Réglage du bord tactile
-
-
-    // variables pour la manipulation de points. delta_distance = distance entre le point actuel et le point précédent
-    int lastX;
-    int lastY;
-
+    private boolean cruzou_6 = false;
+    private boolean cruzou_7 = false;
+    private boolean cruzou_8 = false;
+    private boolean cruzou_9 = false;
+    private boolean cruzou_10 = false; // out of design
+    private boolean test_line;
+    private boolean test_line_ok = true;
     private ArrayList<Long> my_times = new ArrayList<>();
     private ArrayList<Float> my_X = new ArrayList<>();
     private ArrayList<Float> my_Y = new ArrayList<>();
@@ -162,6 +146,7 @@ public class Dessin_item22 extends View {
         image = getResizeBitmap(image);
 
         Log.d(TAG, " INIT ");
+
     }
 
     @Override
@@ -303,13 +288,17 @@ public class Dessin_item22 extends View {
         Log.d(TAG, " ON DRAW ");
     }
 
-    @Override
+
     public boolean onTouchEvent(MotionEvent event) {
         int maskedAction = event.getActionMasked();
         int actionIndex = event.getActionIndex();
         int id = event.getPointerId(actionIndex);
         int historySize = event.getHistorySize();
         boolean mytest = false;
+        SoundPool sp = new SoundPool(2, AudioManager.STREAM_MUSIC,0);
+        int sound= sp.load(getContext(),R.raw.beep,1);
+        int sound2= sp.load(getContext(),R.raw.beep2,1);
+        int sound3= sp.load(getContext(),R.raw.beep3,1);
         try {
             xDown = event.getX(id);
             yDown = event.getY(id);
@@ -319,9 +308,7 @@ public class Dessin_item22 extends View {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
         if (mytest) {
-
             if (!on && !deactivate_drawing) {
                 my_times.add(System.currentTimeMillis());
                 my_X.add(xDown);
@@ -335,6 +322,7 @@ public class Dessin_item22 extends View {
                     if (on || deactivate_drawing) {
                         break;
                     } else {
+
                         Path p = new Path();
                         ArrayList<Float> tableauX = new ArrayList<>();
                         ArrayList<Float> tableauY = new ArrayList<>();
@@ -370,41 +358,61 @@ public class Dessin_item22 extends View {
                                     test1 = true;
                                     digitou_5 = true;
                                     Log.d(TAG, "  first touch in center= true");
+                                    MediaPlayer mp = MediaPlayer.create(getContext(),R.raw.beep3);
+                                    mp.start();
                                 } else {
                                     Log.d(TAG, "  first touch in center= false");
+                                    MediaPlayer mp = MediaPlayer.create(getContext(),R.raw.beep3);
+                                    mp.start();
                                 }
                             } else if (down_block != current_block) { // nouvelle touche!!
                                 if (down_block == 1) {
+                                    MediaPlayer mp = MediaPlayer.create(getContext(),R.raw.beep3);
+                                    mp.start();
                                     digitou_1 = true;
                                     Log.d(TAG, " TYPED BLOCK 1 ");
+                                 //   sp.play(sound,1,1,0,0,1);
                                 } else if (down_block == 2) {
                                     digitou_2 = true;
                                     Log.d(TAG, " TYPED BLOCK 2 ");
+                                 //   sp.play(sound2,1,1,0,0,1);
                                 } else if (down_block == 3) {
                                     digitou_3 = true;
                                     Log.d(TAG, " TYPED BLOCK 3 ");
+                                //    sp.play(sound3,1,1,0,0,1);
                                 } else if (down_block == 4) {
                                     digitou_4 = true;
                                     Log.d(TAG, " TYPED BLOCK 4 ");
+                                 //   sp.play(sound,1,1,0,0,1);
                                 } else if (down_block == 5) {
                                     digitou_5 = true;
                                     Log.d(TAG, " TYPED BLOCK 5 ");
+                                  //  sp.play(sound2,1,1,0,0,1);
                                 } else if (down_block == 6) {
                                     digitou_6 = true;
                                     Log.d(TAG, " TYPED BLOCK 6 ");
+                               //     sp.play(sound3,1,1,0,0,1);
                                 } else if (down_block == 7) {
                                     digitou_7 = true;
                                     Log.d(TAG, " TYPED BLOCK 7 ");
+                                 //   sp.play(sound,1,1,0,0,1);
                                 } else if (down_block == 8) {
                                     digitou_8 = true;
                                     Log.d(TAG, " TYPED BLOCK 8 ");
+                                 //   sp.play(sound2,1,1,0,0,1);
                                 } else if (down_block == 9) {
                                     digitou_9 = true;
                                     Log.d(TAG, " TYPED BLOCK 9 ");
+                                  //  sp.play(sound3,1,1,0,0,1);
                                 } else if (down_block == 10) {
                                     digitou_10 = true;
                                     Log.d(TAG, " TYPED OUTSIDE THE FIGURE BOUNDARY !!! ");
+                                 //   sp.play(sound,1.0f,1.0f,0,0,1.0f);
                                 }
+
+                                MediaPlayer mp = MediaPlayer.create(getContext(),R.raw.beep3);
+                                mp.start();
+
                             }
 
                             test_line = verify_borders_untouched((int) xDown, (int) yDown);
@@ -562,7 +570,7 @@ public class Dessin_item22 extends View {
                             lastY = Math.round(tableauY.get(tableauY.size() - 1));
                             up_block = get_current_block(lastX, lastY);
                             if (!on) {
-                                if (firsttouch) { // verificar se retirou o dedo do centro
+                                if (firsttouch) { //vérifier si vous avez retiré votre doigt du centre
                                     if ((fisrt_block == 5) && (up_block == 5) && (cruzou_1 == false) && (cruzou_2 == false) &&
                                             (cruzou_3 == false) && (cruzou_4 == false) && (cruzou_5 == false) &&
                                             (cruzou_6 == false) && (cruzou_7 == false) && (cruzou_8 == false) &&
@@ -714,7 +722,7 @@ public class Dessin_item22 extends View {
     }
 
 
-    // funções para retornar o valor de cada teste
+    // fonctions pour renvoyer la valeur de chaque test
     public boolean gettest1() {
         return test1;
     }
@@ -949,7 +957,7 @@ public class Dessin_item22 extends View {
     }
 
 
-    // Funções de cotations automáticas
+    // fonctions de cotation automatique
     public boolean verify_square(int xp, int yp, int xc, int yc, int lado) {
         if ((xp >= xc - (lado / 2)) && (xp <= xc + (lado / 2)) && (yp >= yc - (lado / 2)) && (yp < yc + (lado / 2))) {
             return true;

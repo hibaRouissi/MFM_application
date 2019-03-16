@@ -52,6 +52,8 @@
         android:layout_above="@id/linearLayout"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:background="#FFFFFFFF"
+        android:background="@drawable/coffre"
         android:visibility="visible" />
+    <!--  android:background="#FFFFFFFF" -->
+
 </RelativeLayout>

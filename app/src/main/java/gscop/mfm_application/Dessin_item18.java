@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.media.MediaPlayer;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -34,14 +35,14 @@ public class Dessin_item18 extends View {
     private final Paint paint = new Paint();
     private final Paint mPaintImage = new Paint();
     private Long lastUpTime = 0l;
-    private Paint mycircle=new Paint();
+    private Paint mycircle = new Paint();
 
 
     private HashMap<Integer, Path> paths = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsX = new HashMap<>();
     private HashMap<Integer, ArrayList<Float>> tabsY = new HashMap<>();
-    private HashMap<Integer,Long> eventTimes = new HashMap<>();
-    private HashMap<Integer,Boolean> isPalmTouch = new HashMap<>();
+    private HashMap<Integer, Long> eventTimes = new HashMap<>();
+    private HashMap<Integer, Boolean> isPalmTouch = new HashMap<>();
 
     private ArrayList<Path> completedPaths = new ArrayList<>();
     private ArrayList<ArrayList<Float>> completedTabsX = new ArrayList<>();
@@ -62,15 +63,15 @@ public class Dessin_item18 extends View {
     private ArrayList<Float> yDownList = new ArrayList<>();
     private boolean on = false;
 
-        // cotation automatique. variaveis a serem reinicializadas se o utilisador clicar em effacer
-    private boolean firstpath= true;   // le premier chemin parcouru
-    private boolean test1 =false ; // se o primeiro toque é dentro do circulo central;
-    private boolean test2 =false ; // se fez círculo menor em 1 traço sem parada
-    private boolean test3 =false ; // se fez círculo menor em 1 traço com parada
-    private boolean test4 =false ; // se fez círculo menor em 2 traços (com/sem parada, não verif)
-    private boolean test5 =false ; // se fez círculo maior em 1 traço e sem parada
-    private boolean test6 =false ; // se fez círculo maior em 1 traço com parada
-    private boolean test7 =false ; // se fez círculo maior em 2 traços (com/sem parada, não verif)
+    // cotation automatique. variaveis a serem reinicializadas se o utilisador clicar em effacer
+    private boolean firstpath = true;   // le premier chemin parcouru
+    private boolean test1 = false; // se o primeiro toque é dentro do circulo central;
+    private boolean test2 = false; // se fez círculo menor em 1 traço sem parada
+    private boolean test3 = false; // se fez círculo menor em 1 traço com parada
+    private boolean test4 = false; // se fez círculo menor em 2 traços (com/sem parada, não verif)
+    private boolean test5 = false; // se fez círculo maior em 1 traço e sem parada
+    private boolean test6 = false; // se fez círculo maior em 1 traço com parada
+    private boolean test7 = false; // se fez círculo maior em 2 traços (com/sem parada, não verif)
 
     // variavel usada para informar o primeiro ponto depois de um toque na tela.
     private boolean first_of_move;    // le premier registre (point) sur un chemin
@@ -86,7 +87,7 @@ public class Dessin_item18 extends View {
     // velocidade = delta_distance/delta_tempo. Usada para verificar se o usuário
     // parou por um instante durante o desenho.
     private ArrayList<Integer> delta_distance = new ArrayList<>();
-    private ArrayList<Long>    delta_tempo    = new ArrayList<>();
+    private ArrayList<Long> delta_tempo = new ArrayList<>();
 
     // variáveis para manipulação de pontos. delta_distance=distância entre ponto atual e anterior
     int currentX;
@@ -98,9 +99,9 @@ public class Dessin_item18 extends View {
     long currenttime;
     long lastcurrenttime;
 
-    int centerx     =760;
+    int centerx = 760;
     // Changement de la position de zone 21/11/2018 (avant était 1500)
-    int centery     =1020;
+    int centery = 1020;
 
     // pour le cas où il ne lève pas le doigt du centre
     private ArrayList<Float> truncated_inner_x = new ArrayList<>();
@@ -113,11 +114,11 @@ public class Dessin_item18 extends View {
     private boolean first_truncation_outer = true;
     private boolean enable_composed_truncation_inner = false;
     private boolean enable_composed_truncation_outer = false;
-    private int number_of_traces=0;
-    private boolean exited_firsttouch_in_center=false;
-    private boolean exited_firsttouch_outside_large_circle=false;
+    private int number_of_traces = 0;
+    private boolean exited_firsttouch_in_center = false;
+    private boolean exited_firsttouch_outside_large_circle = false;
 
-    private boolean test_incomplet=false; // pour faire la differente entre seulement le point au milieu
+    private boolean test_incomplet = false; // pour faire la differente entre seulement le point au milieu
 
     public Dessin_item18(Context context) {
         super(context);
@@ -143,25 +144,26 @@ public class Dessin_item18 extends View {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(20);
 
-        image = BitmapFactory.decodeResource(getResources(), R.drawable.item18);
+        //image = BitmapFactory.decodeResource(getResources(), R.drawable.item18); IMAGE CD CLASSIQUE
+        image = BitmapFactory.decodeResource(getResources(), R.drawable.serrure_sable); //nouvelle image serrure sable
         image = getResizeBitmap(image);
 
-        Log.d(TAG," INIT ");
+        Log.d(TAG, " INIT ");
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
 
-        custom_image = Bitmap.createBitmap(getWidth(),getHeight(),Bitmap.Config.ARGB_8888);
-        canvas.drawBitmap(custom_image,0,0,null);
+        custom_image = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        canvas.drawBitmap(custom_image, 0, 0, null);
         canvas = new Canvas(custom_image);
 
         if (mImageX == 0f || mImageY == 0f) {
             mImageX = (getWidth() - image.getWidth()) / 2;
-            mImageY = (3*(getHeight() - image.getHeight()) / 4);
+            mImageY = (3 * (getHeight() - image.getHeight()) / 4);
         }
         // // Changement de la position du dessin 21/11/2018 (avant était mImageY)
-        canvas.drawBitmap(image, mImageX, mImageY-50, mPaintImage);
+        canvas.drawBitmap(image, mImageX, mImageY - 50, mPaintImage);
 
 // remover os caracteres /* para colocar as marcas dos limites
 /*
@@ -181,13 +183,13 @@ public class Dessin_item18 extends View {
         canvas.drawCircle(centerx, centery,590 ,mycircle);
 
 */
-  // remover os caracteres  para colocar as marcas dos limites
+        // remover os caracteres  para colocar as marcas dos limites
 
 
         // inserido para a truncagem
         for (int i = 0; i < truncated_inner_x.size(); i++) {
-                canvas.drawPoint(truncated_inner_x.get(i), truncated_inner_y.get(i), paint);
-                paint.setColor(Color.TRANSPARENT);
+            canvas.drawPoint(truncated_inner_x.get(i), truncated_inner_y.get(i), paint);
+            paint.setColor(Color.TRANSPARENT);
         }
 
         for (int i = 0; i < truncated_outer_x.size(); i++) {
@@ -200,11 +202,11 @@ public class Dessin_item18 extends View {
             Path fingerPath = paths.get(i);
             if (fingerPath != null) {
                 canvas.drawPoint(xDown, yDown, paint);
-                if(isPalmTouch.get(i)){
+                if (isPalmTouch.get(i)) {
                     paint.setColor(Color.BLUE);
                 }
                 // Couleur qui apparaît lorsque vous écrivez
-                else{
+                else {
                     paint.setColor(Color.TRANSPARENT);
                 }
                 canvas.drawPath(fingerPath, paint);
@@ -212,10 +214,9 @@ public class Dessin_item18 extends View {
         }
 
         for (int i = 0; i < xDownList.size(); i++) {
-            if(isPalm.get(i)){
+            if (isPalm.get(i)) {
                 paint.setColor(Color.BLUE);
-            }
-            else{
+            } else {
                 paint.setColor(Color.TRANSPARENT);
             }
             canvas.drawPoint(xDownList.get(i), yDownList.get(i), paint);
@@ -223,17 +224,16 @@ public class Dessin_item18 extends View {
 
         for (int i = 0; i < completedPaths.size(); i++) {
             Path completedPath = completedPaths.get(i);
-            if(isPalm.get(i)){
+            if (isPalm.get(i)) {
                 paint.setColor(Color.BLUE);
-            }
-            else{
+            } else {
                 // Couleur qui apparaît sur l'écran
                 paint.setColor(Color.TRANSPARENT);
             }
             canvas.drawPath(completedPath, paint);
         }
         canvas_cv = canvas;
-        Log.d(TAG," ON DRAW ");
+        Log.d(TAG, " ON DRAW ");
     }
 
     @Override
@@ -247,14 +247,14 @@ public class Dessin_item18 extends View {
             xDown = event.getX(id);
             yDown = event.getY(id);
             // verify if the touch is inside the authorized window
- //           if (calc_distance((int)xDown, (int)yDown, centerx, centery)<=750)
-                mytest=true;
+            //           if (calc_distance((int)xDown, (int)yDown, centerx, centery)<=750)
+            mytest = true;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         if (mytest) {  // if the event is inside the authorized window
-            if (!on){
+            if (!on) {
                 my_times.add(System.currentTimeMillis());
                 my_X.add(xDown);
                 my_Y.add(yDown);
@@ -264,10 +264,9 @@ public class Dessin_item18 extends View {
                 // Actions à réaliser quand l'utilisateur touche l'écran
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_POINTER_DOWN: {
-                    if(on){
+                    if (on) {
                         break;
-                    }
-                    else {
+                    } else {
                         Path p = new Path();
                         ArrayList<Float> tableauX = new ArrayList<>();
                         ArrayList<Float> tableauY = new ArrayList<>();
@@ -276,9 +275,9 @@ public class Dessin_item18 extends View {
                             p.moveTo(xDown, yDown);
                             paths.put(id, p);
 
-                            number_of_traces=number_of_traces+1;
+                            number_of_traces = number_of_traces + 1;
 
-                            if (number_of_traces==1) {
+                            if (number_of_traces == 1) {
                                 if (calc_distance(centerx, centery, (int) xDown, (int) yDown) < 180) {
                                     test1 = true;
                                     Log.d(TAG, "  first touch in center= true");
@@ -287,13 +286,12 @@ public class Dessin_item18 extends View {
                                 }
                             }
 
-                            if (number_of_traces>1) {
+                            if (number_of_traces > 1) {
                                 if (calc_distance(centerx, centery, (int) xDown, (int) yDown) > 180) {
                                     test_incomplet = true;
                                     Log.d(TAG, "  first touch in center= true");
                                 }
                             }
-
 
 
                             // Contiennent les temps de initialisation du movement
@@ -322,14 +320,14 @@ public class Dessin_item18 extends View {
                                 isPalmTouch.put(id, false);
                             }
                             invalidate();
-                            first_of_move=true;
+                            first_of_move = true;
 
-                            if (!enable_composed_truncation_inner){
+                            if (!enable_composed_truncation_inner) {
                                 // pour le truncation
-                                if (!first_truncation_inner && start_truncation_inner && (truncated_inner_x.size()!=0)){
-                                    float lastxpoint= truncated_inner_x.get(truncated_inner_x.size()-1);
-                                    float lastypoint= truncated_inner_y.get(truncated_inner_y.size()-1);
-                                    if (calc_distance((int)lastxpoint, (int)lastypoint, (int) xDown, (int) yDown) < 150) {
+                                if (!first_truncation_inner && start_truncation_inner && (truncated_inner_x.size() != 0)) {
+                                    float lastxpoint = truncated_inner_x.get(truncated_inner_x.size() - 1);
+                                    float lastypoint = truncated_inner_y.get(truncated_inner_y.size() - 1);
+                                    if (calc_distance((int) lastxpoint, (int) lastypoint, (int) xDown, (int) yDown) < 150) {
                                         enable_composed_truncation_inner = true;
                                         Log.d(TAG, "  Enabling composed truncation inner");
                                     } else {
@@ -340,11 +338,11 @@ public class Dessin_item18 extends View {
 //                                enable_composed_truncation_inner=false;
                             }
 
-                            if (!enable_composed_truncation_outer){
-                                if (!first_truncation_outer && start_truncation_outer &&(truncated_outer_x.size()!=0)){
-                                    float lastxpoint= truncated_outer_x.get(truncated_outer_x.size()-1);
-                                    float lastypoint= truncated_outer_y.get(truncated_outer_y.size()-1);
-                                    if (calc_distance((int)lastxpoint, (int)lastypoint, (int) xDown, (int) yDown) < 150) {
+                            if (!enable_composed_truncation_outer) {
+                                if (!first_truncation_outer && start_truncation_outer && (truncated_outer_x.size() != 0)) {
+                                    float lastxpoint = truncated_outer_x.get(truncated_outer_x.size() - 1);
+                                    float lastypoint = truncated_outer_y.get(truncated_outer_y.size() - 1);
+                                    if (calc_distance((int) lastxpoint, (int) lastypoint, (int) xDown, (int) yDown) < 150) {
                                         enable_composed_truncation_outer = true;
                                         Log.d(TAG, "  Enabling composed truncation outer ");
                                     } else {
@@ -369,23 +367,25 @@ public class Dessin_item18 extends View {
                     if (on) {
                         float mx = event.getX(id);
                         float my = event.getY(id);
-
+                        //**************** NEW - Hiba: bruit quand tour du cd*******************
+                        MediaPlayer mp = MediaPlayer.create(getContext(),R.raw.gratter);
+                        mp.start();
+                        //**************************************************************
                         //Commented by Adriana 11/03/2018 (limiter l'image cd à l'intérieur de l'écran)
                         // if (mx >= mImageX && mx <= (mImageX + image.getWidth())) {
                         //     if (my >= mImageY && my <= (mImageY + image.getHeight())) {
-                        if (mx >= ((image.getWidth()/2)) && mx <= ((image.getWidth()/2)+230)) {
-                            if (my >= (image.getHeight()/2) && my <= ((image.getHeight()/2) + 590)) {
+                        if (mx >= ((image.getWidth() / 2)) && mx <= ((image.getWidth() / 2) + 230)) {
+                            if (my >= (image.getHeight() / 2) && my <= ((image.getHeight() / 2) + 590)) {
                                 mImageX = mx - (image.getWidth() / 2);
                                 mImageY = my - (image.getHeight() / 2);
-                                Log.d(TAG," ACTION MOVE CD");
-                                centerx     =(int) mx;
-                                centery     =(int) my;
+                                Log.d(TAG, " ACTION MOVE CD");
+                                centerx = (int) mx;
+                                centery = (int) my;
                                 invalidate();
                                 return false;
                             }
                         }
-                    }
-                    else {
+                    } else {
 
                         // Pour chaque identifiant de contact, on récupère ses coordonnés et on créé une ligne entre chacun des points
                         long time = event.getEventTime();
@@ -394,24 +394,24 @@ public class Dessin_item18 extends View {
                         Log.d(TAG, " MOVE HISTORYSIZE=  " + historySize);
 
                         // inserido para truncagem
-                        if (!start_truncation_inner){
-                            int mydist=calc_distance(centerx, centery, (int) xDown, (int) yDown);
-                            if ( (mydist >= 180 + 20) && (mydist<=590) ){ // +20 pour eviter le bruit
-                                start_truncation_inner=true;
+                        if (!start_truncation_inner) {
+                            int mydist = calc_distance(centerx, centery, (int) xDown, (int) yDown);
+                            if ((mydist >= 180 + 20) && (mydist <= 590)) { // +20 pour eviter le bruit
+                                start_truncation_inner = true;
                             }
                         }
-                        if (start_truncation_inner && (number_of_traces<=5) && (first_truncation_inner || enable_composed_truncation_inner)){
+                        if (start_truncation_inner && (number_of_traces <= 5) && (first_truncation_inner || enable_composed_truncation_inner)) {
                             truncated_inner_x.add(xDown);
                             truncated_inner_y.add(yDown);
                         }
 
-                        if (!start_truncation_outer){
-                            int mydist=calc_distance(centerx, centery, (int) xDown, (int) yDown);
-                            if ( (mydist >= 590 + 20) && (mydist<=850) ){ // +20 pour eviter le bruit
-                                start_truncation_outer=true;
+                        if (!start_truncation_outer) {
+                            int mydist = calc_distance(centerx, centery, (int) xDown, (int) yDown);
+                            if ((mydist >= 590 + 20) && (mydist <= 850)) { // +20 pour eviter le bruit
+                                start_truncation_outer = true;
                             }
                         }
-                        if (start_truncation_outer && (number_of_traces<=5) && (first_truncation_outer || enable_composed_truncation_outer)){
+                        if (start_truncation_outer && (number_of_traces <= 5) && (first_truncation_outer || enable_composed_truncation_outer)) {
                             truncated_outer_x.add(xDown);
                             truncated_outer_y.add(yDown);
                         }
@@ -495,51 +495,52 @@ public class Dessin_item18 extends View {
                         paths.remove(id);
                         eventTimes.remove(id);
 
-                        // testando se o traçado faz um angulo maior que 360 graus
+
+                        // teste si le trait fait un angle supérieur à 360 degrés
                         boolean test_angle = verify_angle_circle(tableauX, tableauY, centerx, centery);
                         Log.d(TAG, "  angle > 360 degrees :" + test_angle);
-                        // testando se o traçado foi feito sem parar
-                        // os limiares devem ser ajustados conforme o comportamento esperado
-                        boolean test_velovity = verify_min_velocity(100,50);
+                        // teste si le traçage a été effectué non-stop
+                        // les seuils doivent être ajustés en fonction du comportement attendu
+                        boolean test_velovity = verify_min_velocity(100, 50);
                         Log.d(TAG, "  velocity > threshold : " + test_velovity);
-                        // testando se o traçado estava dentro do círculo menor
+
+                        // teste si le tracé était à l'intérieur du petit cercle
                         boolean test_small_circle = verify_circle(tableauX, tableauY, centerx, centery, 180, 590);
                         Log.d(TAG, "  trace within small circle= " + test_small_circle);
-                        // testando se o traçaho estava dentro do círculo maior
+                        // teste si le tracé était à l'intérieur du grand cercle
                         boolean test_large_circle = verify_circle(tableauX, tableauY, centerx, centery, 590, 850);
                         Log.d(TAG, "  trace within large circle= " + test_large_circle);
 
 
-                        boolean test_truncated_inner_angle=false;
-                        boolean test_truncated_inner_small_circle=false;
-                         // test with truncated
-                        if (truncated_inner_x.size()!=0) {
+                        boolean test_truncated_inner_angle = false;
+                        boolean test_truncated_inner_small_circle = false;
+                        // test with truncated
+                        if (truncated_inner_x.size() != 0) {
                             test_truncated_inner_angle = verify_angle_circle(truncated_inner_x, truncated_inner_y, centerx, centery);
                             Log.d(TAG, "  truncated inner angle > 360 degrees :" + test_truncated_inner_angle);
-                            // testando se o traçado estava dentro do círculo menor
+                            // teste si le tracé était à l'intérieur du petit cercle
                             test_truncated_inner_small_circle = verify_circle(truncated_inner_x, truncated_inner_y, centerx, centery, 180, 590);
                             Log.d(TAG, "  truncated inner trace within small circle= " + test_truncated_inner_small_circle);
 
-                            if (verify_min_angle(truncated_inner_x, truncated_inner_y, centerx, centery)){
-                                test_incomplet=true;
+                            if (verify_min_angle(truncated_inner_x, truncated_inner_y, centerx, centery)) {
+                                test_incomplet = true;
                             }
                         }
 
-                        boolean test_truncated_outer_angle=false;
-                        boolean test_truncated_outer_large_circle=false;
+                        boolean test_truncated_outer_angle = false;
+                        boolean test_truncated_outer_large_circle = false;
                         // test with truncated
-                        if (truncated_outer_x.size()!=0) {
+                        if (truncated_outer_x.size() != 0) {
                             test_truncated_outer_angle = verify_angle_circle(truncated_outer_x, truncated_outer_y, centerx, centery);
                             Log.d(TAG, "  truncated outer angle > 360 degrees :" + test_truncated_outer_angle);
-                            // testando se o traçaho estava dentro do círculo maior
+                            // teste si le tracé était à l'intérieur du grand cercle
                             test_truncated_outer_large_circle = verify_circle(truncated_outer_x, truncated_outer_y, centerx, centery, 590, 850);
                             Log.d(TAG, "  truncated outer trace within large circle= " + test_truncated_outer_large_circle);
 
-                            if (verify_min_angle(truncated_outer_x, truncated_outer_y, centerx, centery)){
-                                test_incomplet=true;
+                            if (verify_min_angle(truncated_outer_x, truncated_outer_y, centerx, centery)) {
+                                test_incomplet = true;
                             }
                         }
-
 
 
                         // test2 // se fez círculo menor em 1 traço sem parada
@@ -569,26 +570,26 @@ public class Dessin_item18 extends View {
 */
 
 
-                        // iniciando verificações com o truncated
-                        if (test_truncated_inner_angle || test_truncated_outer_angle){ // é um círculo completo
+                        // démarrage de la vérification avec tronqué
+                        if (test_truncated_inner_angle || test_truncated_outer_angle) { // é um círculo completo
                             if (test_truncated_inner_small_circle && !enable_composed_truncation_inner) {
-                                if (test_velovity){
+                                if (test_velovity) {
                                     test2 = true;
                                 } else {
-                                    test3=true;
+                                    test3 = true;
                                 }
                             }
                             if (test_truncated_outer_large_circle && !enable_composed_truncation_outer) {
-                                if (test_velovity){
+                                if (test_velovity) {
                                     test5 = true;
                                 } else {
-                                    test6=true;
+                                    test6 = true;
                                 }
                             }
                         }
 
                         // verificação do truncated
-                        if (test_truncated_inner_angle || test_truncated_outer_angle){ // é um círculo completo
+                        if (test_truncated_inner_angle || test_truncated_outer_angle) { // é um círculo completo
                             if (test_truncated_inner_small_circle && enable_composed_truncation_inner) {
                                 test4 = true;
                             }
@@ -657,43 +658,43 @@ public class Dessin_item18 extends View {
                         }
 */
 
-                        Log.d(TAG, " test 1 = "+test1);
-                        Log.d(TAG, " test 2 = "+test2);
-                        Log.d(TAG, " test 3 = "+test3);
-                        Log.d(TAG, " test 4 = "+test4);
-                        Log.d(TAG, " test 5 = "+test5);
-                        Log.d(TAG, " test 6 = "+test6);
-                        Log.d(TAG, " test 7 = "+test7);
+                        Log.d(TAG, " test 1 = " + test1);
+                        Log.d(TAG, " test 2 = " + test2);
+                        Log.d(TAG, " test 3 = " + test3);
+                        Log.d(TAG, " test 4 = " + test4);
+                        Log.d(TAG, " test 5 = " + test5);
+                        Log.d(TAG, " test 6 = " + test6);
+                        Log.d(TAG, " test 7 = " + test7);
 
-                        boolean cotation_3=false;
-                        boolean cotation_2=false;
-                        boolean cotation_1=false;
+                        boolean cotation_3 = false;
+                        boolean cotation_2 = false;
+                        boolean cotation_1 = false;
 
                         // pour une cotation = 3;
-                        if (     test1 && (
-                                ((number_of_traces==2) && test_angle && test_large_circle && test_velovity) || // derniere tracee complete
-                                ((number_of_traces==1) && test_truncated_outer_angle && test_truncated_outer_large_circle && test_velovity) ||
-                                ((number_of_traces==2) && exited_firsttouch_outside_large_circle && test_truncated_outer_angle && test_truncated_outer_large_circle && test_velovity)
-                                )) {
-                            cotation_3=true;
+                        if (test1 && (
+                                ((number_of_traces == 2) && test_angle && test_large_circle && test_velovity) || // derniere tracee complete
+                                        ((number_of_traces == 1) && test_truncated_outer_angle && test_truncated_outer_large_circle && test_velovity) ||
+                                        ((number_of_traces == 2) && exited_firsttouch_outside_large_circle && test_truncated_outer_angle && test_truncated_outer_large_circle && test_velovity)
+                        )) {
+                            cotation_3 = true;
                             Log.d(TAG, " cotation = 3!!!!!!!!!!!!!!!!");
                         }
 
                         // pour une cotation = 2;
-                        if (    test1 && (
+                        if (test1 && (
                                 (!cotation_3) && (
-                                (test_truncated_outer_angle && test_truncated_outer_large_circle) )
-                                )) {
-                            cotation_2=true;
+                                        (test_truncated_outer_angle && test_truncated_outer_large_circle))
+                        )) {
+                            cotation_2 = true;
                             Log.d(TAG, " cotation = 2!!!!!!!!!!!!!!!!");
                         }
 
                         // pour une cotation = 1;
-                        if (    test1 && (
+                        if (test1 && (
                                 (!cotation_3 && !cotation_2) && (
-                                (test_truncated_inner_angle && test_truncated_inner_small_circle) )
-                                )){
-                            cotation_1=true;
+                                        (test_truncated_inner_angle && test_truncated_inner_small_circle))
+                        )) {
+                            cotation_1 = true;
                             Log.d(TAG, " cotation = 1!!!!!!!!!!!!!!!!");
                         }
 
@@ -710,19 +711,19 @@ public class Dessin_item18 extends View {
                         lasttableauX.addAll(tableauX);
                         lasttableauY.addAll(tableauY);
 */
-                        if (first_truncation_inner && start_truncation_inner){
-                            first_truncation_inner=false;
+                        if (first_truncation_inner && start_truncation_inner) {
+                            first_truncation_inner = false;
                         }
 
-                        if (first_truncation_outer && start_truncation_outer){
-                            first_truncation_outer=false;
+                        if (first_truncation_outer && start_truncation_outer) {
+                            first_truncation_outer = false;
                         }
 
                     }
                     if (!on) firstpath = false;
                     Log.d(TAG, " ACTION UP ");
 
-                    if (number_of_traces==1) {
+                    if (number_of_traces == 1) {
                         if (calc_distance(centerx, centery, (int) xDown, (int) yDown) < 90) {
                             exited_firsttouch_in_center = true;
                             Log.d(TAG, " EXITED FIRST TOUCH INSIDE CENTER !!!!");
@@ -744,8 +745,8 @@ public class Dessin_item18 extends View {
                     break;
                 }
 
-                case MotionEvent.ACTION_CANCEL:{
-                    Log.d(TAG," PROBLEM WITH PALM TOUCH ");
+                case MotionEvent.ACTION_CANCEL: {
+                    Log.d(TAG, " PROBLEM WITH PALM TOUCH ");
                     break;
                 }
 
@@ -755,13 +756,12 @@ public class Dessin_item18 extends View {
         return true;
     }
 
-    public Long getDurationTime(){
+    public Long getDurationTime() {
         Long durationTime;
-        if(eventDownTimes.size() != 0) {
+        if (eventDownTimes.size() != 0) {
             durationTime = lastUpTime - eventDownTimes.get(0);
             return durationTime;
-        }
-        else{
+        } else {
             return 0l;
         }
     }
@@ -769,15 +769,14 @@ public class Dessin_item18 extends View {
     public Bitmap getCartographie() {
         // inserted by Adriana (toutes les lignes utilisent canvas_cv pour enregistrer le dessin sur le pdf)
         //custom_image = Bitmap.createBitmap(getWidth(),getHeight(),Bitmap.Config.ARGB_8888);
-        canvas_cv.drawBitmap(custom_image,0,0,null);
+        canvas_cv.drawBitmap(custom_image, 0, 0, null);
         canvas_cv = new Canvas(custom_image);
 
         for (int i = 0; i < completedPaths.size(); i++) {
             Path completedPath = completedPaths.get(i);
-            if(isPalm.get(i)){
+            if (isPalm.get(i)) {
                 paint.setColor(Color.BLUE);
-            }
-            else{
+            } else {
                 paint.setColor(Color.BLACK); // pdf
             }
             canvas_cv.drawPath(completedPath, paint);
@@ -786,43 +785,95 @@ public class Dessin_item18 extends View {
         return custom_image;
     }
 
-    // funções para retornar o valor de cada teste
-    public boolean gettest1() {return test1;}
-    public boolean gettest2() {return test2;}
-    public boolean gettest3() {return test3;}
-    public boolean gettest4() {return test4;}
-    public boolean gettest5() {return test5;}
-    public boolean gettest6() {return test6;}
-    public boolean gettest7() {return test7;}
-    public boolean gettest_incomplet() {return test_incomplet;}
 
-    public Canvas getCanvas() {return canvas_cv;}
+    // fonctions pour renvoyer la valeur de chaque test
+    public boolean gettest1() {
+        return test1;
+    }
 
-    public Paint getPaint() {return paint;}
+    public boolean gettest2() {
+        return test2;
+    }
+
+    public boolean gettest3() {
+        return test3;
+    }
+
+    public boolean gettest4() {
+        return test4;
+    }
+
+    public boolean gettest5() {
+        return test5;
+    }
+
+    public boolean gettest6() {
+        return test6;
+    }
+
+    public boolean gettest7() {
+        return test7;
+    }
+
+    public boolean gettest_incomplet() {
+        return test_incomplet;
+    }
+
+    public Canvas getCanvas() {
+        return canvas_cv;
+    }
+
+    public Paint getPaint() {
+        return paint;
+    }
 
     public ArrayList getTableauX() {
         return completedTabsX;
     }
 
-    public int getnpaths() {return completedPaths.size();}
+    public int getnpaths() {
+        return completedPaths.size();
+    }
 
-    public ArrayList getTableauY() {return completedTabsY;}
+    public ArrayList getTableauY() {
+        return completedTabsY;
+    }
 
-    public void getBooleanClick(boolean click) {on = click;}
+    public void getBooleanClick(boolean click) {
+        on = click;
+    }
 
-    public ArrayList getEventUpTimes(){return eventUpTimes;}
+    public ArrayList getEventUpTimes() {
+        return eventUpTimes;
+    }
 
-    public ArrayList getEventDownTimes(){return eventDownTimes;}
+    public ArrayList getEventDownTimes() {
+        return eventDownTimes;
+    }
 
-    public ArrayList getmy_times (){return my_times;}
-    public ArrayList getmy_X (){return my_X;}
-    public ArrayList getmy_Y (){return my_Y;}
+    public ArrayList getmy_times() {
+        return my_times;
+    }
 
-    public Float getCdX(){return mImageX;}
+    public ArrayList getmy_X() {
+        return my_X;
+    }
 
-    public Float getCdY(){return mImageY;}
+    public ArrayList getmy_Y() {
+        return my_Y;
+    }
 
-    public ArrayList getBooleanPalm() {return isPalm;}
+    public Float getCdX() {
+        return mImageX;
+    }
+
+    public Float getCdY() {
+        return mImageY;
+    }
+
+    public ArrayList getBooleanPalm() {
+        return isPalm;
+    }
 
 
     /**
@@ -845,28 +896,28 @@ public class Dessin_item18 extends View {
         }
     }
 
-    private Bitmap getResizeBitmap(Bitmap bitmap){
+    private Bitmap getResizeBitmap(Bitmap bitmap) {
         // L'image serait redimensionné pour le taille du CD (1317 px avec 300ppi de résolution)
-        float aspect_ratio = bitmap.getWidth()/bitmap.getHeight();
+        float aspect_ratio = bitmap.getWidth() / bitmap.getHeight();
         int mImageWidth = 1317;
-        int mImageHeight = Math.round(mImageWidth*aspect_ratio);
-        bitmap = Bitmap.createScaledBitmap(bitmap,mImageWidth,mImageHeight,false);
-        return bitmap.copy(Bitmap.Config.ARGB_8888,false);
+        int mImageHeight = Math.round(mImageWidth * aspect_ratio);
+        bitmap = Bitmap.createScaledBitmap(bitmap, mImageWidth, mImageHeight, false);
+        return bitmap.copy(Bitmap.Config.ARGB_8888, false);
     }
 
-    public void orderPaths(){
-        HashMap<Integer,Long> upTimes = new HashMap<>();
+    public void orderPaths() {
+        HashMap<Integer, Long> upTimes = new HashMap<>();
 
-        for(int i = 0; i < completedTabsX.size(); i++) {
+        for (int i = 0; i < completedTabsX.size(); i++) {
             tabsX.put(i, completedTabsX.get(i));
             tabsY.put(i, completedTabsY.get(i));
             upTimes.put(i, eventUpTimes.get(i));
-            eventTimes.put(i,eventDownTimes.get(i));
-            isPalmTouch.put(i,isPalm.get(i));
+            eventTimes.put(i, eventDownTimes.get(i));
+            isPalmTouch.put(i, isPalm.get(i));
         }
 
-        for(int i = 0; i < (completedTabsX.size()-1); i++) {
-            for (int j = i+1; j < completedTabsX.size(); j++) {
+        for (int i = 0; i < (completedTabsX.size() - 1); i++) {
+            for (int j = i + 1; j < completedTabsX.size(); j++) {
                 if (eventTimes.get(j) < eventTimes.get(i)) {
                     ArrayList<Float> x = tabsX.get(i);
                     ArrayList<Float> y = tabsY.get(i);
@@ -881,8 +932,8 @@ public class Dessin_item18 extends View {
                     upTimes.put(j, t2);
                     eventTimes.put(i, eventTimes.get(j));
                     eventTimes.put(j, t1);
-                    isPalmTouch.put(i,isPalmTouch.get(j));
-                    isPalmTouch.put(j,b);
+                    isPalmTouch.put(i, isPalmTouch.get(j));
+                    isPalmTouch.put(j, b);
                 }
             }
         }
@@ -894,7 +945,7 @@ public class Dessin_item18 extends View {
         eventDownTimes.clear();
         isPalm.clear();
 
-        for(int i = 0; i < tabsX.size(); i++){
+        for (int i = 0; i < tabsX.size(); i++) {
             completedTabsX.add(tabsX.get(i));
             completedTabsY.add(tabsY.get(i));
             eventUpTimes.add(upTimes.get(i));
@@ -905,107 +956,104 @@ public class Dessin_item18 extends View {
 
 
     // Funções de cotations automáticas
-    public int calc_distance (int x1, int y1, int x2, int y2){
-        return (int) Math.sqrt (Math.pow(x2-x1,2)+ Math.pow(y2-y1,2));
+    public int calc_distance(int x1, int y1, int x2, int y2) {
+        return (int) Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     }
 
-    public int calc_angle (int xc, int yc, int xp, int yp){
-        double cateto_oposto= yp-yc;
-        double hipotenusa= calc_distance(xc,yc,xp,yp);
-        double angulorad=Math.asin(cateto_oposto/hipotenusa);
-        int angulobruto = - (int) (double) (angulorad*180/3.1415);
+    public int calc_angle(int xc, int yc, int xp, int yp) {
+        double cateto_oposto = yp - yc;
+        double hipotenusa = calc_distance(xc, yc, xp, yp);
+        double angulorad = Math.asin(cateto_oposto / hipotenusa);
+        int angulobruto = -(int) (double) (angulorad * 180 / 3.1415);
         int angulo;
-        if ((xp<=xc) && (yp<=yc)){ // quadrante II
-            angulo=180-angulobruto;
-        } else if ((xp<=xc) && (yp>=yc)){// quadrante III
+        if ((xp <= xc) && (yp <= yc)) { // quadrante II
             angulo = 180 - angulobruto;
-        } else if ((xp>=xc) && (yp>=yc)){// quadrante IV
-         angulo=360+angulobruto;
+        } else if ((xp <= xc) && (yp >= yc)) {// quadrante III
+            angulo = 180 - angulobruto;
+        } else if ((xp >= xc) && (yp >= yc)) {// quadrante IV
+            angulo = 360 + angulobruto;
         } else {
-            angulo=angulobruto;
+            angulo = angulobruto;
         }
         return angulo;
     }
 
     public boolean verify_circle(ArrayList<Float> coordenadasX, ArrayList<Float> coordenadasY,
-                                 int xc, int yc, int rmin, int rmax){
+                                 int xc, int yc, int rmin, int rmax) {
         boolean teste = true;
-        for (int i=0; i<coordenadasX.size();i=i+1){
-            if ( ((calc_distance (xc,yc, Math.round(coordenadasX.get(i)),Math.round(coordenadasY.get(i))))> rmax) ||
-                 ((calc_distance (xc,yc, Math.round(coordenadasX.get(i)),Math.round(coordenadasY.get(i))))< rmin)){
-              teste=false;
+        for (int i = 0; i < coordenadasX.size(); i = i + 1) {
+            if (((calc_distance(xc, yc, Math.round(coordenadasX.get(i)), Math.round(coordenadasY.get(i)))) > rmax) ||
+                    ((calc_distance(xc, yc, Math.round(coordenadasX.get(i)), Math.round(coordenadasY.get(i)))) < rmin)) {
+                teste = false;
             }
         }
         return teste;
     }
 
     public boolean verify_angle_circle(ArrayList<Float> coordenadasX, ArrayList<Float> coordenadasY,
-                                    int xc, int yc){
+                                       int xc, int yc) {
         int angulo_total = 0;
         int angulo_atual;
         int angulo_anterior;
         int diferenca;
 
-        // primeiro ponto
-        angulo_anterior= calc_angle (xc, yc, Math.round(coordenadasX.get(0)),Math.round(coordenadasY.get(0)));
-        // para o restante de pontos
-        for (int i=1; i<coordenadasX.size();i=i+1){
-            angulo_atual= calc_angle (xc, yc, Math.round(coordenadasX.get(i)),Math.round(coordenadasY.get(i)));
-            diferenca=angulo_atual-angulo_anterior; // calcula a diferança de angulos
-            if (diferenca!=0){ // se houve diferença de ângulos, faz algo.
-                if (Math.abs(diferenca) > 180){ // se diferença muito grande, deu um salto, cruzando o 0/360 graus
-                    if (angulo_atual<90){  // cruzou no sentido anti-horário
-                        diferenca=diferenca+360; // acrescentar off-set positivo
-                    } else { // cruzou no sentido horário
-                        diferenca=diferenca-360; // acrescentar off-set negativo
+        //premier point
+        angulo_anterior = calc_angle(xc, yc, Math.round(coordenadasX.get(0)), Math.round(coordenadasY.get(0)));
+        // pour les autres points
+        for (int i = 1; i < coordenadasX.size(); i = i + 1) {
+            angulo_atual = calc_angle(xc, yc, Math.round(coordenadasX.get(i)), Math.round(coordenadasY.get(i)));
+            diferenca = angulo_atual - angulo_anterior; // calcula a diferança de angulos
+            if (diferenca != 0) { // s'il y avait une différence d'angles, fais quelque chose.
+                if (Math.abs(diferenca) > 180) { // si très grande différence, sauté en franchissant les 0/360 degrés
+                    if (angulo_atual < 90) {  // croisé dans le sens antihoraire
+                        diferenca = diferenca + 360;// ajoute un décalage positif
+                    } else {// croisé dans le sens des aiguilles d'une montre
+                        diferenca = diferenca - 360; // ajoute un décalage négatif
                     }
                 }
-             angulo_total=angulo_total+diferenca;// agora acumula a diferença, seja positiva ou negativa
+                angulo_total = angulo_total + diferenca;// agora acumula a diferença, seja positiva ou negativa
             }
-            angulo_anterior=angulo_atual; // atualiza o angulo para o próximo loop.
+            angulo_anterior = angulo_atual; // atualiza o angulo para o próximo loop.
         }
-        if (Math.abs(angulo_total)>=335){ // retorna positivo apenas se o ângulo for maior que 300 graus
-            return  true;
+        if (Math.abs(angulo_total) >= 335) { // retorna positivo apenas se o ângulo for maior que 300 graus
+            return true;
         } else {
             return false;
         }
     }
-
-
 
 
     public boolean verify_min_angle(ArrayList<Float> coordenadasX, ArrayList<Float> coordenadasY,
-                                       int xc, int yc){
+                                    int xc, int yc) {
         int angulo_total = 0;
         int angulo_atual;
         int angulo_anterior;
         int diferenca;
 
         // primeiro ponto
-        angulo_anterior= calc_angle (xc, yc, Math.round(coordenadasX.get(0)),Math.round(coordenadasY.get(0)));
+        angulo_anterior = calc_angle(xc, yc, Math.round(coordenadasX.get(0)), Math.round(coordenadasY.get(0)));
         // para o restante de pontos
-        for (int i=1; i<coordenadasX.size();i=i+1){
-            angulo_atual= calc_angle (xc, yc, Math.round(coordenadasX.get(i)),Math.round(coordenadasY.get(i)));
-            diferenca=angulo_atual-angulo_anterior; // calcula a diferança de angulos
-            if (diferenca!=0){ // se houve diferença de ângulos, faz algo.
-                if (Math.abs(diferenca) > 180){ // se diferença muito grande, deu um salto, cruzando o 0/360 graus
-                    if (angulo_atual<90){  // cruzou no sentido anti-horário
-                        diferenca=diferenca+360; // acrescentar off-set positivo
+        for (int i = 1; i < coordenadasX.size(); i = i + 1) {
+            angulo_atual = calc_angle(xc, yc, Math.round(coordenadasX.get(i)), Math.round(coordenadasY.get(i)));
+            diferenca = angulo_atual - angulo_anterior; // calcula a diferança de angulos
+            if (diferenca != 0) { // se houve diferença de ângulos, faz algo.
+                if (Math.abs(diferenca) > 180) { // se diferença muito grande, deu um salto, cruzando o 0/360 graus
+                    if (angulo_atual < 90) {  // cruzou no sentido anti-horário
+                        diferenca = diferenca + 360; // acrescentar off-set positivo
                     } else { // cruzou no sentido horário
-                        diferenca=diferenca-360; // acrescentar off-set negativo
+                        diferenca = diferenca - 360; // acrescentar off-set negativo
                     }
                 }
-                angulo_total=angulo_total+diferenca;// agora acumula a diferença, seja positiva ou negativa
+                angulo_total = angulo_total + diferenca;// agora acumula a diferença, seja positiva ou negativa
             }
-            angulo_anterior=angulo_atual; // atualiza o angulo para o próximo loop.
+            angulo_anterior = angulo_atual; // atualiza o angulo para o próximo loop.
         }
-        if (Math.abs(angulo_total)>=30){ // retorna positivo apenas se o ângulo for maior que 300 graus
-            return  true;
+        if (Math.abs(angulo_total) >= 30) { // retorna positivo apenas se o ângulo for maior que 300 graus
+            return true;
         } else {
             return false;
         }
     }
-
 
 
     // verificando a velocidade
@@ -1013,11 +1061,11 @@ public class Dessin_item18 extends View {
         float minimo = 1000000;
         // variável usada para evitar que o dedo parado no início do teste seja computado
         // com velocidade zero, fazendo com que pense-se que houve uma parada.
-        boolean user_started =false;
+        boolean user_started = false;
         // o averaging é o número de pontos de ação "Move" que são usados em uma média
         // Geralmente, a cada 30 ms é gerado um novo move. Este número deve ser ajustado
         // de acordo com o comportamento esperado.
-        int averaging =10;
+        int averaging = 10;
 
         for (int i = 0; i < Math.floor(delta_tempo.size() / averaging); i++) {
             float totaldistancia = 0;
@@ -1031,10 +1079,10 @@ public class Dessin_item18 extends View {
             float velocidade = (1000 * totaldistancia / totaltime);
             Log.d(TAG, " Velocidade =" + velocidade);
             if (velocidade >= limiar_inicio) { // este limiar deve ser ajustado
-                user_started=true;
+                user_started = true;
             }
             if (user_started) {
-                if (velocidade<minimo){
+                if (velocidade < minimo) {
                     minimo = velocidade;
                 }
             }
@@ -1044,13 +1092,12 @@ public class Dessin_item18 extends View {
         delta_tempo = new ArrayList<>();
         Log.d(TAG, " Velocidade minima =" + minimo);
         // retornando o valor
-        if (minimo>=limiar_teste){
+        if (minimo >= limiar_teste) {
             return true;
         } else {
             return false;
         }
     }
-
 
 
 }

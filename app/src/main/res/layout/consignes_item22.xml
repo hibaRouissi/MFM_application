@@ -52,5 +52,5 @@
         android:layout_marginTop="890dp"
         android:layout_marginEnd="60dp"
         android:onClick="videoplay"
-        android:text="Démarer la démo" />
+        android:text="Démarrer la démo" />
 </RelativeLayout>

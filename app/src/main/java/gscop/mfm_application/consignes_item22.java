@@ -3,6 +3,7 @@ package gscop.mfm_application;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -78,22 +79,21 @@ public class consignes_item22 extends Activity {
         });
     }
 
-
     // *********NEW********************
     //lecture de la vidéo de démo
     public void videoplay(View v) {
         m= new MediaController(this);
         vid=(VideoView) findViewById(R.id.videoView);
-        String path = "android.resource://" + getPackageName() + "/" + R.raw.video_demo; //BORDEEEEL CA MARCHEEEEE!!!!!!!!!!!!!!
+        String path = "android.resource://" + getPackageName() + "/" + R.raw.video_demo;
         vid.setVideoURI(Uri.parse(path));
         vid.setMediaController(m);
         vid.start();
+        vid.setBackgroundColor(Color.TRANSPARENT);
     };
 
 //*************************
 
     private boolean back_answer = false;
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
